@@ -97,28 +97,29 @@ export async function verifyEmailAction(data: unknown): Promise<VerifyEmailRespo
       body: JSON.stringify({ email, code }),
     });
 
+    const responseData = await response.json();
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const errorMessage = errorData.message || `HTTP error! Status: ${response.status}`;
+      const errorMessage = responseData.message || `HTTP error! Status: ${response.status}`;
       console.error('Webhook Error:', errorMessage);
       return {
         success: false,
         message: `Verification failed. ${errorMessage}`,
       };
     }
-
-    const responseData = await response.json();
-    if (responseData.message === 'Email verified successfully! You can now log in.') {
+    
+    if (responseData.status === 'verified') {
         return {
           success: true,
-          message: responseData.message
+          message: responseData.message || 'Email verified successfully!',
         };
     }
-    
+
     return {
-      success: true,
-      message: responseData.message || 'Email verified successfully!',
+      success: false,
+      message: responseData.message || 'An unknown error occurred during verification.',
     };
+
   } catch (error) {
     console.error('Fetch Error:', error);
     return {

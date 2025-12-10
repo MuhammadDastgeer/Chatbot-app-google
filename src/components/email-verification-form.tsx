@@ -57,9 +57,7 @@ function EmailVerificationFormComponent() {
         title: "Success!",
         description: result.message,
       });
-      if (result.message === 'Email verified successfully! You can now log in.') {
-        router.push("/login");
-      }
+      router.push("/login");
     } else {
       toast({
         variant: "destructive",
