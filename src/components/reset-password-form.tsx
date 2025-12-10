@@ -98,7 +98,7 @@ function ResetPasswordFormComponent() {
                   <FormControl>
                     <div className="relative">
                       <Input type={showPassword ? "text" : "password"} placeholder="New Password" {...field} className="bg-gray-100 dark:bg-gray-800 border-none pr-10"/>
-                      <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowPassword(!showPassword)}>
+                      <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowPassword((prev) => !prev)}>
                         {showPassword ? <EyeOff /> : <Eye />}
                       </Button>
                     </div>
@@ -115,7 +115,7 @@ function ResetPasswordFormComponent() {
                   <FormControl>
                     <div className="relative">
                       <Input type={showConfirmPassword ? "text" : "password"} placeholder="Confirm New Password" {...field} className="bg-gray-100 dark:bg-gray-800 border-none pr-10"/>
-                       <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                       <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowConfirmPassword((prev) => !prev)}>
                         {showConfirmPassword ? <EyeOff /> : <Eye />}
                       </Button>
                     </div>
