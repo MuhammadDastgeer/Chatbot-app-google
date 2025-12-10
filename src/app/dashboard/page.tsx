@@ -137,7 +137,7 @@ export default function DashboardPage() {
     formData.append('file', file);
 
     try {
-        const response = await fetch('https://o4tdkmt2.rpcl.app/webhook-test/Document', {
+        const response = await fetch('https://o4tdkmt2.rpcl.app/webhook-test/Chatbot', {
             method: 'POST',
             body: formData,
         });
@@ -323,5 +323,3 @@ export default function DashboardPage() {
     </SidebarProvider>
   );
 }
-
-    
