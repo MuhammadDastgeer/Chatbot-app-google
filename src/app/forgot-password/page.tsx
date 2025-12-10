@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 export default function ForgotPasswordPage() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
+    <main className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-black p-4">
       <div className="absolute top-4 right-4">
         <ThemeToggle />
       </div>
