@@ -11,7 +11,7 @@ export const useAuth = () => {
   const pathname = usePathname();
 
   const login = () => {
-    Cookies.set(AUTH_COOKIE_KEY, 'true', { expires: 7 }); 
+    Cookies.set(AUTH_COOKIE_KEY, 'true', { expires: 2 }); 
     router.push('/dashboard');
   };
 
