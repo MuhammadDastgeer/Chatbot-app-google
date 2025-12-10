@@ -5,7 +5,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Image from 'next/image';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { MessageCircle, FileText, FileSearch, Bot, BrainCircuit, Link2 } from 'lucide-react';
+import { MessageCircle, FileText, FileSearch, Bot, BrainCircuit, Link2, Twitter, Facebook, Instagram } from 'lucide-react';
 
 
 export default function LandingPage() {
@@ -158,43 +158,31 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
-      <footer className="border-t bg-muted/40 py-8">
-        <div className="container">
-          <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
-            <div className="flex flex-col gap-3">
-              <AiWithDastgeerLogo />
-              <p className="text-sm text-muted-foreground">
-                Inspiring Tech Solutions for a Brighter Future.
-              </p>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-3">Features</h3>
-              <ul className="space-y-2">
-                <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">Conversational Chat</Link></li>
-                <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">RAG Chat</Link></li>
-                <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">File Analysis</Link></li>
-                <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">VectorMind</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-3">Company</h3>
-              <ul className="space-y-2">
-                <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">About Us</Link></li>
-                <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">Contact</Link></li>
-                <li><Link href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground">Profile</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-3">Legal</h3>
-              <ul className="space-y-2">
-                <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">Privacy Policy</Link></li>
-                <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">Terms of Service</Link></li>
-              </ul>
-            </div>
+      <footer className="bg-card border-t py-12">
+        <div className="container text-center">
+          <div className="flex justify-center mb-6">
+            <AiWithDastgeerLogo />
           </div>
-          <div className="mt-8 border-t pt-6 flex items-center justify-center">
-            <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} AI WITH DASTGEER. All rights reserved.</p>
+          <nav className="flex justify-center gap-6 mb-6">
+            <Link href="/" className="text-sm hover:text-primary transition-colors">Home</Link>
+            <Link href="#" className="text-sm hover:text-primary transition-colors">About</Link>
+            <Link href="/dashboard" className="text-sm hover:text-primary transition-colors">Profile</Link>
+            <Link href="#" className="text-sm hover:text-primary transition-colors">Contact</Link>
+          </nav>
+          <div className="flex justify-center gap-6 mb-8">
+            <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <Twitter className="h-5 w-5" />
+            </Link>
+            <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <Facebook className="h-5 w-5" />
+            </Link>
+            <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <Instagram className="h-5 w-5" />
+            </Link>
           </div>
+          <p className="text-xs text-muted-foreground">
+            © {new Date().getFullYear()} AI WITH DASTGEER. All rights reserved.
+          </p>
         </div>
       </footer>
     </div>
