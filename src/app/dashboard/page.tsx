@@ -23,7 +23,7 @@ import { Button } from '@/components/ui/button';
 import { AiWithDastgeerLogo } from '@/components/ai-with-dastgeer-logo';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Plus, Send, MessageSquare, LogOut } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 
 type Message = {
@@ -31,21 +31,51 @@ type Message = {
   isUser: boolean;
 };
 
+type Chat = {
+  id: string;
+  title: string;
+  messages: Message[];
+};
+
 export default function DashboardPage() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [chats, setChats] = useState<Chat[]>([
+    { id: `chat-${Date.now()}`, title: 'New Chat', messages: [] },
+  ]);
+  const [activeChatId, setActiveChatId] = useState<string>(chats[0].id);
   const [newMessage, setNewMessage] = useState('');
   const router = useRouter();
 
+  const activeChat = useMemo(() => {
+    return chats.find((c) => c.id === activeChatId);
+  }, [chats, activeChatId]);
+
   const handleSendMessage = () => {
-    if (newMessage.trim() !== '') {
-      setMessages([...messages, { text: newMessage, isUser: true }]);
+    if (newMessage.trim() !== '' && activeChat) {
+      const userMessage: Message = { text: newMessage, isUser: true };
+      const updatedMessages = [...activeChat.messages, userMessage];
+      
+      const firstUserMessage = updatedMessages.find(m => m.isUser)?.text || 'New Chat';
+      const chatTitle = firstUserMessage.substring(0, 25) + (firstUserMessage.length > 25 ? '...' : '');
+
+      const updatedChat = { ...activeChat, messages: updatedMessages, title: activeChat.messages.length === 0 ? chatTitle : activeChat.title };
+      
+      const updatedChats = chats.map((c) => (c.id === activeChatId ? updatedChat : c));
+
+      setChats(updatedChats);
+
       // Simulate a bot response
       setTimeout(() => {
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          { text: "This is a simulated response.", isUser: false },
-        ]);
+        setChats((prevChats) => {
+            const currentChat = prevChats.find(c => c.id === activeChatId);
+            if (!currentChat) return prevChats;
+
+            const botMessage: Message = { text: "This is a simulated response.", isUser: false };
+            const messagesWithBot = [...currentChat.messages, botMessage];
+            const updatedCurrentChat = {...currentChat, messages: messagesWithBot };
+            return prevChats.map(c => c.id === activeChatId ? updatedCurrentChat : c);
+        });
       }, 1000);
+
       setNewMessage('');
     }
   };
@@ -55,7 +85,17 @@ export default function DashboardPage() {
   };
 
   const handleNewChat = () => {
-    setMessages([]);
+    const newChat: Chat = {
+      id: `chat-${Date.now()}`,
+      title: 'New Chat',
+      messages: [],
+    };
+    setChats((prev) => [...prev, newChat]);
+    setActiveChatId(newChat.id);
+  };
+  
+  const switchChat = (chatId: string) => {
+    setActiveChatId(chatId);
   };
 
   return (
@@ -74,6 +114,14 @@ export default function DashboardPage() {
         <SidebarContent className="p-2">
             <p className="text-xs text-muted-foreground p-2">Previous Chats</p>
             <SidebarMenu>
+                 {chats.filter(c => c.messages.length > 0).map(chat => (
+                    <SidebarMenuItem key={chat.id}>
+                        <SidebarMenuButton onClick={() => switchChat(chat.id)} isActive={activeChatId === chat.id}>
+                            <MessageSquare />
+                            <span>{chat.title}</span>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                ))}
             </SidebarMenu>
         </SidebarContent>
         <SidebarHeader>
@@ -90,7 +138,7 @@ export default function DashboardPage() {
           <header className="sticky top-0 z-50 flex items-center justify-between w-full h-14 px-4 border-b shrink-0 bg-background">
             <div className="flex items-center gap-2">
                 <SidebarTrigger />
-                <h1 className="text-xl font-semibold">New Chat</h1>
+                <h1 className="text-xl font-semibold">{activeChat?.title}</h1>
             </div>
             <div className="flex items-center gap-2">
                 <ThemeToggle />
@@ -98,7 +146,7 @@ export default function DashboardPage() {
           </header>
           <main className="flex-1 flex flex-col p-4 overflow-hidden">
             <div className="flex-1 overflow-y-auto space-y-4 pr-4">
-                {messages.map((message, index) => (
+                {activeChat && activeChat.messages.map((message, index) => (
                     <div key={index} className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}>
                         <Card className={`max-w-xs md:max-w-md lg:max-w-2xl ${message.isUser ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
                             <CardContent className="p-3">
@@ -107,7 +155,7 @@ export default function DashboardPage() {
                         </Card>
                     </div>
                 ))}
-                {messages.length === 0 && (
+                {(!activeChat || activeChat.messages.length === 0) && (
                     <div className="flex h-full items-center justify-center">
                         <Card className="w-full max-w-lg text-center">
                             <CardHeader>
@@ -136,6 +184,7 @@ export default function DashboardPage() {
                         size="icon" 
                         className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full !h-10 !w-10"
                         onClick={handleSendMessage}
+                        disabled={!newMessage.trim()}
                     >
                         <Send />
                     </Button>
