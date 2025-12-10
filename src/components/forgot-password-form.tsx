@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Mail, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import Link from 'next/link';
 
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -61,10 +62,10 @@ export function ForgotPasswordForm() {
   }
 
   return (
-    <div className="w-full">
-      <div className="text-center">
+    <div className="w-full bg-card p-8 rounded-2xl shadow-lg">
+      <div className="text-center mb-8">
         <h1 className="text-3xl font-bold">Forgot Password</h1>
-        <p className="text-sm text-muted-foreground mt-2 mb-8">Enter your email to receive a password reset code.</p>
+        <p className="text-sm text-muted-foreground mt-2">Enter your email to receive a password reset code.</p>
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -73,14 +74,15 @@ export function ForgotPasswordForm() {
             name="email"
             render={({ field }) => (
               <FormItem>
+                <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="Email" {...field} className="bg-muted border-0" />
+                  <Input type="email" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full mt-6 !h-12 text-base" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Send Reset Code
           </Button>
@@ -89,7 +91,7 @@ export function ForgotPasswordForm() {
        <p className="mt-8 text-center text-sm text-muted-foreground">
           Remember your password?{" "}
           <Link href="/login" className="font-medium text-primary hover:underline">
-            Sign In
+            Log in
           </Link>
         </p>
     </div>

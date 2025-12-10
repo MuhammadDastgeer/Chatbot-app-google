@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Mail, Lock, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { loginUserAction } from "@/app/actions";
+import { SocialLogins } from "./social-logins";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -66,10 +67,9 @@ export function LoginForm() {
   }
 
   return (
-    <div className="w-full">
-        <div className="text-center">
-            <h1 className="text-3xl font-bold">Sign In</h1>
-            <p className="text-sm text-muted-foreground mt-2 mb-8">or use your account</p>
+    <div className="w-full bg-card p-8 rounded-2xl shadow-lg">
+        <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold">Log In</h1>
         </div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -78,10 +78,11 @@ export function LoginForm() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormControl>
-                    <Input type="email" placeholder="Email" {...field} className="bg-muted border-0" />
-                  </FormControl>
-                  <FormMessage />
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                        <Input type="email" {...field} />
+                    </FormControl>
+                    <FormMessage />
                 </FormItem>
               )}
             />
@@ -90,28 +91,32 @@ export function LoginForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormControl>
-                    <Input type="password" placeholder="Password" {...field} className="bg-muted border-0" />
-                  </FormControl>
-                  <FormMessage />
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                        <Input type="password" {...field} />
+                    </FormControl>
+                    <FormMessage />
                 </FormItem>
               )}
             />
-             <div className="flex justify-center">
-                <Link href="/forgot-password" passHref>
-                  <Button variant="link" className="px-0 h-auto text-sm font-medium text-muted-foreground">Forgot your password?</Button>
-                </Link>
-              </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full mt-6 !h-12 text-base" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Sign In
+              Log In
             </Button>
           </form>
         </Form>
-         <p className="mt-8 text-center text-sm text-muted-foreground md:hidden">
+        <div className="flex justify-end mt-2">
+            <Link href="/forgot-password" passHref>
+                <Button variant="link" className="px-0 h-auto text-sm font-medium text-muted-foreground hover:text-primary">Forgot password?</Button>
+            </Link>
+        </div>
+
+        <SocialLogins label="Or Log in with" />
+        
+        <p className="mt-8 text-center text-sm text-muted-foreground">
           Don't have an account?{" "}
           <Link href="/" className="font-medium text-primary hover:underline">
-            Register
+            Sign Up
           </Link>
         </p>
     </div>

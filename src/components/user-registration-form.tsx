@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { User, Mail, Lock, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { registerUserAction } from "@/app/actions";
+import { SocialLogins } from "./social-logins";
 
 const formSchema = z
   .object({
@@ -77,10 +78,9 @@ export function UserRegistrationForm() {
   }
 
   return (
-    <div className="w-full">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold">Create Account</h1>
-        <p className="text-sm text-muted-foreground mt-2 mb-8">or use your email for registration</p>
+    <div className="w-full bg-card p-8 rounded-2xl shadow-lg">
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold">Sign Up</h1>
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -89,8 +89,9 @@ export function UserRegistrationForm() {
             name="username"
             render={({ field }) => (
               <FormItem>
+                <FormLabel>Username</FormLabel>
                 <FormControl>
-                  <Input placeholder="Username" {...field} className="bg-muted border-0" />
+                  <Input {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -101,8 +102,9 @@ export function UserRegistrationForm() {
             name="email"
             render={({ field }) => (
               <FormItem>
+                <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="Email" {...field} className="bg-muted border-0" />
+                  <Input type="email" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -113,8 +115,9 @@ export function UserRegistrationForm() {
             name="password"
             render={({ field }) => (
               <FormItem>
+                <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="Password" {...field} className="bg-muted border-0" />
+                  <Input type="password" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -125,23 +128,27 @@ export function UserRegistrationForm() {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
+                <FormLabel>Confirm Password</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="Confirm Password" {...field} className="bg-muted border-0" />
+                  <Input type="password" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full mt-6 !h-12 text-base" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Sign Up
           </Button>
         </form>
       </Form>
-      <p className="mt-8 text-center text-sm text-muted-foreground md:hidden">
+      
+      <SocialLogins label="Or Sign up with" />
+
+      <p className="mt-8 text-center text-sm text-muted-foreground">
           Already have an account?{" "}
           <Link href="/login" className="font-medium text-primary hover:underline">
-            Login
+            Log in
           </Link>
         </p>
     </div>

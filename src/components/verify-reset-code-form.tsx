@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Mail, Key, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -14,6 +14,7 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -69,10 +70,10 @@ function VerifyResetCodeFormComponent() {
   }
 
   return (
-    <div className="w-full">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold">Verify Reset Code</h1>
-        <p className="text-sm text-muted-foreground mt-2 mb-8">Enter the code sent to your email address.</p>
+    <div className="w-full bg-card p-8 rounded-2xl shadow-lg">
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold">Verify Code</h1>
+        <p className="text-sm text-muted-foreground mt-2">Enter the code sent to your email address.</p>
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -81,12 +82,11 @@ function VerifyResetCodeFormComponent() {
             name="email"
             render={({ field }) => (
               <FormItem>
+                <FormLabel>Email</FormLabel>
                 <FormControl>
                   <Input
                     type="email"
-                    placeholder="Email"
                     {...field}
-                    className="bg-muted border-0"
                     readOnly
                   />
                 </FormControl>
@@ -99,14 +99,15 @@ function VerifyResetCodeFormComponent() {
             name="code"
             render={({ field }) => (
               <FormItem>
+                <FormLabel>Reset Code</FormLabel>
                 <FormControl>
-                  <Input placeholder="Reset Code" {...field} className="bg-muted border-0" />
+                  <Input {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full mt-6 !h-12 text-base" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Verify Code
           </Button>
