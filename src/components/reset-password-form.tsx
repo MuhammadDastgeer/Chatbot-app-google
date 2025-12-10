@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Lock, Mail, Loader2 } from "lucide-react";
+import Link from 'next/link';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,17 +14,9 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { resetPasswordAction } from "@/app/actions";
 
@@ -87,52 +80,23 @@ function ResetPasswordFormComponent() {
   }
 
   return (
-    <Card className="w-full max-w-md shadow-2xl bg-card">
-      <CardHeader className="text-center">
-        <CardTitle className="text-3xl font-headline">
-          Reset Your Password
-        </CardTitle>
-        <CardDescription>
-          Enter your new password below.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    <div className="w-full">
+        <div className="text-center">
+            <h1 className="text-3xl font-bold">Reset Password</h1>
+            <p className="text-sm text-muted-foreground mt-2 mb-8">Enter your new password below.</p>
+        </div>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="name@example.com"
-                        {...field}
-                        className="pl-10"
-                        readOnly
-                      />
-                    </FormControl>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <input type="hidden" {...form.register("email")} />
+             <input type="hidden" {...form.register("code")} />
             <FormField
               control={form.control}
               name="newPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>New Password</FormLabel>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} className="pl-10" />
-                    </FormControl>
-                  </div>
+                  <FormControl>
+                    <Input type="password" placeholder="New Password" {...field} className="bg-muted border-0" />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -142,13 +106,9 @@ function ResetPasswordFormComponent() {
               name="confirmNewPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirm New Password</FormLabel>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} className="pl-10" />
-                    </FormControl>
-                  </div>
+                  <FormControl>
+                    <Input type="password" placeholder="Confirm New Password" {...field} className="bg-muted border-0" />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -159,8 +119,13 @@ function ResetPasswordFormComponent() {
             </Button>
           </form>
         </Form>
-      </CardContent>
-    </Card>
+        <p className="mt-8 text-center text-sm text-muted-foreground">
+            Suddenly remembered?{" "}
+            <Link href="/login" className="font-medium text-primary hover:underline">
+                Sign In
+            </Link>
+        </p>
+    </div>
   );
 }
 

@@ -18,14 +18,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter
-} from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { loginUserAction } from "@/app/actions";
 
@@ -74,30 +66,21 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="w-full max-w-md shadow-2xl bg-card">
-      <CardHeader className="text-center">
-        <CardTitle className="text-3xl font-headline">
-          Welcome Back
-        </CardTitle>
-        <CardDescription>
-          Sign in to your account to continue.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    <div className="w-full">
+        <div className="text-center">
+            <h1 className="text-3xl font-bold">Sign In</h1>
+            <p className="text-sm text-muted-foreground mt-2 mb-8">or use your account</p>
+        </div>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <FormControl>
-                      <Input type="email" placeholder="name@example.com" {...field} className="pl-10" />
-                    </FormControl>
-                  </div>
+                  <FormControl>
+                    <Input type="email" placeholder="Email" {...field} className="bg-muted border-0" />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -107,37 +90,30 @@ export function LoginForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} className="pl-10" />
-                    </FormControl>
-                  </div>
+                  <FormControl>
+                    <Input type="password" placeholder="Password" {...field} className="bg-muted border-0" />
+                  </FormControl>
                   <FormMessage />
-                  <div className="flex justify-end">
-                    <Link href="/forgot-password" passHref>
-                      <Button variant="link" className="px-0 h-auto text-sm font-medium">Forgot Password?</Button>
-                    </Link>
-                  </div>
                 </FormItem>
               )}
             />
+             <div className="flex justify-center">
+                <Link href="/forgot-password" passHref>
+                  <Button variant="link" className="px-0 h-auto text-sm font-medium text-muted-foreground">Forgot your password?</Button>
+                </Link>
+              </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Login
+              Sign In
             </Button>
           </form>
         </Form>
-      </CardContent>
-      <CardFooter className="flex justify-center">
-        <p className="text-sm text-muted-foreground">
+         <p className="mt-8 text-center text-sm text-muted-foreground md:hidden">
           Don't have an account?{" "}
           <Link href="/" className="font-medium text-primary hover:underline">
             Register
           </Link>
         </p>
-      </CardFooter>
-    </Card>
+    </div>
   );
 }

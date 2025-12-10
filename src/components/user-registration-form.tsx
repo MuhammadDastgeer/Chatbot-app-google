@@ -18,14 +18,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { registerUserAction } from "@/app/actions";
 
@@ -85,97 +77,73 @@ export function UserRegistrationForm() {
   }
 
   return (
-    <Card className="w-full max-w-md shadow-2xl bg-card">
-      <CardHeader className="text-center">
-        <CardTitle className="text-3xl font-headline">
-          Create an Account
-        </CardTitle>
-        <CardDescription>
-          Join our platform today! Enter your details to register.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="username"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Username</FormLabel>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <FormControl>
-                      <Input placeholder="your_username" {...field} className="pl-10" />
-                    </FormControl>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <FormControl>
-                      <Input type="email" placeholder="name@example.com" {...field} className="pl-10" />
-                    </FormControl>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} className="pl-10" />
-                    </FormControl>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Confirm Password</FormLabel>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} className="pl-10" />
-                    </FormControl>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Register
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-      <CardFooter className="flex justify-center">
-        <p className="text-sm text-muted-foreground">
+    <div className="w-full">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold">Create Account</h1>
+        <p className="text-sm text-muted-foreground mt-2 mb-8">or use your email for registration</p>
+      </div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="username"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input placeholder="Username" {...field} className="bg-muted border-0" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input type="email" placeholder="Email" {...field} className="bg-muted border-0" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input type="password" placeholder="Password" {...field} className="bg-muted border-0" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input type="password" placeholder="Confirm Password" {...field} className="bg-muted border-0" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Sign Up
+          </Button>
+        </form>
+      </Form>
+      <p className="mt-8 text-center text-sm text-muted-foreground md:hidden">
           Already have an account?{" "}
           <Link href="/login" className="font-medium text-primary hover:underline">
             Login
           </Link>
         </p>
-      </CardFooter>
-    </Card>
+    </div>
   );
 }

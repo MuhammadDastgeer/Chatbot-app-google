@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Mail, Loader2 } from "lucide-react";
+import Link from 'next/link';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,17 +14,9 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { forgotPasswordAction } from "@/app/actions";
 
@@ -68,41 +61,37 @@ export function ForgotPasswordForm() {
   }
 
   return (
-    <Card className="w-full max-w-md shadow-2xl bg-card">
-      <CardHeader className="text-center">
-        <CardTitle className="text-3xl font-headline">
-          Forgot Password
-        </CardTitle>
-        <CardDescription>
-          Enter your email to receive a password reset code.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <FormControl>
-                      <Input type="email" placeholder="name@example.com" {...field} className="pl-10" />
-                    </FormControl>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Send Reset Code
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+    <div className="w-full">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold">Forgot Password</h1>
+        <p className="text-sm text-muted-foreground mt-2 mb-8">Enter your email to receive a password reset code.</p>
+      </div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input type="email" placeholder="Email" {...field} className="bg-muted border-0" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Send Reset Code
+          </Button>
+        </form>
+      </Form>
+       <p className="mt-8 text-center text-sm text-muted-foreground">
+          Remember your password?{" "}
+          <Link href="/login" className="font-medium text-primary hover:underline">
+            Sign In
+          </Link>
+        </p>
+    </div>
   );
 }
