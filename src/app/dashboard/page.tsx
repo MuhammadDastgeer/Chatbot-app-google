@@ -75,7 +75,7 @@ export default function DashboardPage() {
       setIsLoading(true);
 
       try {
-        const response = await fetch('https://o4tdkmt2.rpcl.app/webhook-test/chatbot', {
+        const response = await fetch('https://o4tdkmt2.rpcl.app/webhook-test/Chatbot', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
