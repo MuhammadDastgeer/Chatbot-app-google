@@ -174,10 +174,17 @@ export async function loginUserAction(data: unknown): Promise<LoginUserResponse>
             message: responseData.message,
         };
     }
+    
+    if (responseData.message === 'Login successful!') {
+      return {
+        success: true,
+        message: 'Login successful!',
+      };
+    }
 
     return {
-      success: true,
-      message: responseData.message || 'Login successful!',
+      success: false,
+      message: responseData.message || 'An unknown error occurred.',
     };
   } catch (error) {
     console.error('Fetch Error:', error);
