@@ -17,7 +17,7 @@ export default function LoginPage() {
             <div className="hidden md:flex flex-col items-center justify-center p-12 text-center bg-primary text-primary-foreground">
                 <h2 className="text-4xl font-bold mb-4">New Here?</h2>
                 <p className="mb-8">Sign up and discover a great amount of new opportunities!</p>
-                <Link href="/" passHref>
+                <Link href="/signup" passHref>
                     <Button variant="outline" className="w-full max-w-xs bg-transparent border-2 border-primary-foreground text-primary-foreground font-bold py-3 px-4 rounded-full hover:bg-primary-foreground hover:text-primary transition-colors duration-300 h-auto">
                         Sign Up
                     </Button>
