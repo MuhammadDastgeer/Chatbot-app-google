@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Mail, Lock, Loader2 } from "lucide-react";
-import Link from "next/link";
+import { Mail, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -24,21 +23,17 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { loginUserAction } from "@/app/actions";
+import { forgotPasswordAction } from "@/app/actions";
 
 const formSchema = z.object({
   email: z.string().email({
     message: "Please enter a valid email address.",
   }),
-  password: z.string().min(1, {
-    message: "Password is required.",
-  }),
 });
 
-export function LoginForm() {
+export function ForgotPasswordForm() {
   const { toast } = useToast();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -47,27 +42,26 @@ export function LoginForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
-      password: "",
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
 
-    const result = await loginUserAction(values);
+    const result = await forgotPasswordAction(values);
 
     setIsLoading(false);
 
-    if (result.success) {
+    if (result.success && result.email) {
       toast({
         title: "Success!",
         description: result.message,
       });
-      router.push("/dashboard");
+      router.push(`/verify-reset-code?email=${encodeURIComponent(result.email)}`);
     } else {
       toast({
         variant: "destructive",
-        title: "Login Failed",
+        title: "Error",
         description: result.message,
       });
     }
@@ -77,10 +71,10 @@ export function LoginForm() {
     <Card className="w-full max-w-md shadow-2xl bg-card">
       <CardHeader className="text-center">
         <CardTitle className="text-3xl font-headline">
-          Welcome Back
+          Forgot Password
         </CardTitle>
         <CardDescription>
-          Sign in to your account to continue.
+          Enter your email to receive a password reset code.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -102,27 +96,6 @@ export function LoginForm() {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} className="pl-10" />
-                    </FormControl>
-                  </div>
-                  <FormMessage />
-                  <div className="flex justify-end">
-                    <Link href="/forgot-password" passHref>
-                      <Button variant="link" className="px-0 h-auto text-sm font-medium text-primary">Forgot Password?</Button>
-                    </Link>
-                  </div>
-                </FormItem>
-              )}
-            />
             <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isLoading}
               style={{
                 backgroundColor: 'hsl(var(--accent))',
@@ -130,19 +103,11 @@ export function LoginForm() {
               }}
             >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Login
+              Send Reset Code
             </Button>
           </form>
         </Form>
       </CardContent>
-      <CardFooter className="flex justify-center">
-        <p className="text-sm text-muted-foreground">
-          Don't have an account?{" "}
-          <Link href="/" className="font-medium text-primary hover:underline">
-            Register
-          </Link>
-        </p>
-      </CardFooter>
     </Card>
   );
 }

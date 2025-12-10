@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Mail, Lock, Loader2 } from "lucide-react";
-import Link from "next/link";
+import { Lock, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -24,37 +23,51 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { loginUserAction } from "@/app/actions";
+import { resetPasswordAction } from "@/app/actions";
 
 const formSchema = z.object({
-  email: z.string().email({
-    message: "Please enter a valid email address.",
+  email: z.string().email(),
+  code: z.string(),
+  newPassword: z.string().min(6, {
+      message: "Password must be at least 6 characters.",
   }),
-  password: z.string().min(1, {
-    message: "Password is required.",
-  }),
+  confirmNewPassword: z.string(),
+}).refine((data) => data.newPassword === data.confirmNewPassword, {
+  message: "Passwords don't match",
+  path: ["confirmNewPassword"],
 });
 
-export function LoginForm() {
+
+function ResetPasswordFormComponent() {
   const { toast } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
+
+  const email = searchParams.get("email") || "";
+  const code = searchParams.get("code") || "";
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: email,
+      code: code,
+      newPassword: "",
+      confirmNewPassword: "",
     },
   });
+
+  useEffect(() => {
+    form.setValue("email", email);
+    form.setValue("code", code);
+  }, [email, code, form]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
 
-    const result = await loginUserAction(values);
+    const result = await resetPasswordAction(values);
 
     setIsLoading(false);
 
@@ -63,11 +76,11 @@ export function LoginForm() {
         title: "Success!",
         description: result.message,
       });
-      router.push("/dashboard");
+      router.push("/login");
     } else {
       toast({
         variant: "destructive",
-        title: "Login Failed",
+        title: "Error",
         description: result.message,
       });
     }
@@ -77,10 +90,10 @@ export function LoginForm() {
     <Card className="w-full max-w-md shadow-2xl bg-card">
       <CardHeader className="text-center">
         <CardTitle className="text-3xl font-headline">
-          Welcome Back
+          Reset Your Password
         </CardTitle>
         <CardDescription>
-          Sign in to your account to continue.
+          Enter your new password below.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -88,14 +101,14 @@ export function LoginForm() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
-              name="email"
+              name="newPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>New Password</FormLabel>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <FormControl>
-                      <Input type="email" placeholder="name@example.com" {...field} className="pl-10" />
+                      <Input type="password" placeholder="••••••••" {...field} className="pl-10" />
                     </FormControl>
                   </div>
                   <FormMessage />
@@ -104,10 +117,10 @@ export function LoginForm() {
             />
             <FormField
               control={form.control}
-              name="password"
+              name="confirmNewPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>Confirm New Password</FormLabel>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <FormControl>
@@ -115,11 +128,6 @@ export function LoginForm() {
                     </FormControl>
                   </div>
                   <FormMessage />
-                  <div className="flex justify-end">
-                    <Link href="/forgot-password" passHref>
-                      <Button variant="link" className="px-0 h-auto text-sm font-medium text-primary">Forgot Password?</Button>
-                    </Link>
-                  </div>
                 </FormItem>
               )}
             />
@@ -130,19 +138,20 @@ export function LoginForm() {
               }}
             >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Login
+              Reset Password
             </Button>
           </form>
         </Form>
       </CardContent>
-      <CardFooter className="flex justify-center">
-        <p className="text-sm text-muted-foreground">
-          Don't have an account?{" "}
-          <Link href="/" className="font-medium text-primary hover:underline">
-            Register
-          </Link>
-        </p>
-      </CardFooter>
     </Card>
   );
+}
+
+
+export function ResetPasswordForm() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <ResetPasswordFormComponent />
+        </Suspense>
+    )
 }

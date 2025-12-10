@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Mail, Lock, Loader2 } from "lucide-react";
-import Link from "next/link";
+import { Mail, Key, Loader2 } from "lucide-react";
+import { useSearchParams, useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -24,37 +23,40 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { loginUserAction } from "@/app/actions";
+import { verifyResetCodeAction } from "@/app/actions";
 
 const formSchema = z.object({
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  password: z.string().min(1, {
-    message: "Password is required.",
+  email: z.string().email(),
+  code: z.string().min(1, {
+    message: "Please enter the reset code.",
   }),
 });
 
-export function LoginForm() {
+function VerifyResetCodeFormComponent() {
   const { toast } = useToast();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email") || "";
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: email,
+      code: "",
     },
   });
+
+  useEffect(() => {
+    form.setValue("email", email);
+  }, [email, form]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
 
-    const result = await loginUserAction(values);
+    const result = await verifyResetCodeAction(values);
 
     setIsLoading(false);
 
@@ -63,11 +65,11 @@ export function LoginForm() {
         title: "Success!",
         description: result.message,
       });
-      router.push("/dashboard");
+      router.push(`/reset-password?email=${encodeURIComponent(values.email)}&code=${encodeURIComponent(values.code)}`);
     } else {
       toast({
         variant: "destructive",
-        title: "Login Failed",
+        title: "Verification Failed",
         description: result.message,
       });
     }
@@ -77,10 +79,10 @@ export function LoginForm() {
     <Card className="w-full max-w-md shadow-2xl bg-card">
       <CardHeader className="text-center">
         <CardTitle className="text-3xl font-headline">
-          Welcome Back
+          Verify Reset Code
         </CardTitle>
         <CardDescription>
-          Sign in to your account to continue.
+          Enter the code sent to your email address.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -95,7 +97,13 @@ export function LoginForm() {
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <FormControl>
-                      <Input type="email" placeholder="name@example.com" {...field} className="pl-10" />
+                      <Input
+                        type="email"
+                        placeholder="name@example.com"
+                        {...field}
+                        className="pl-10"
+                        readOnly
+                      />
                     </FormControl>
                   </div>
                   <FormMessage />
@@ -104,22 +112,17 @@ export function LoginForm() {
             />
             <FormField
               control={form.control}
-              name="password"
+              name="code"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>Reset Code</FormLabel>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Key className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} className="pl-10" />
+                      <Input placeholder="123456" {...field} className="pl-10" />
                     </FormControl>
                   </div>
                   <FormMessage />
-                  <div className="flex justify-end">
-                    <Link href="/forgot-password" passHref>
-                      <Button variant="link" className="px-0 h-auto text-sm font-medium text-primary">Forgot Password?</Button>
-                    </Link>
-                  </div>
                 </FormItem>
               )}
             />
@@ -130,19 +133,19 @@ export function LoginForm() {
               }}
             >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Login
+              Verify Code
             </Button>
           </form>
         </Form>
       </CardContent>
-      <CardFooter className="flex justify-center">
-        <p className="text-sm text-muted-foreground">
-          Don't have an account?{" "}
-          <Link href="/" className="font-medium text-primary hover:underline">
-            Register
-          </Link>
-        </p>
-      </CardFooter>
     </Card>
   );
+}
+
+export function VerifyResetCodeForm() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <VerifyResetCodeFormComponent />
+        </Suspense>
+    )
 }

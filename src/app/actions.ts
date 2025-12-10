@@ -162,16 +162,15 @@ export async function loginUserAction(data: unknown): Promise<LoginUserResponse>
     const responseData = await response.json().catch(() => ({ message: 'Login failed due to a server error.' }));
 
     if (!response.ok) {
-      return {
-        success: false,
-        message: responseData.message || `HTTP error! Status: ${response.status}`,
-      };
-    }
-
-    if (responseData.message === 'Invalid password') {
+        if (responseData.message === 'Invalid password') {
+            return {
+                success: false,
+                message: responseData.message,
+            };
+        }
         return {
             success: false,
-            message: responseData.message,
+            message: responseData.message || `HTTP error! Status: ${response.status}`,
         };
     }
     
@@ -192,5 +191,134 @@ export async function loginUserAction(data: unknown): Promise<LoginUserResponse>
       success: false,
       message: 'An unexpected error occurred. Please check your network connection and try again.',
     };
+  }
+}
+
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email('Invalid email address'),
+});
+
+type ForgotPasswordResponse = {
+  success: boolean;
+  message: string;
+  email?: string;
+};
+
+export async function forgotPasswordAction(data: unknown): Promise<ForgotPasswordResponse> {
+  const validatedFields = forgotPasswordSchema.safeParse(data);
+
+  if (!validatedFields.success) {
+    return {
+      success: false,
+      message: validatedFields.error.errors.map((e) => e.message).join(', '),
+    };
+  }
+
+  const { email } = validatedFields.data;
+
+  try {
+    const response = await fetch('https://o4tdkmt2.rpcl.app/webhook-test/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      return { success: false, message: responseData.message || 'An error occurred.' };
+    }
+
+    return { success: true, message: responseData.message, email };
+  } catch (error) {
+    return { success: false, message: 'An unexpected error occurred.' };
+  }
+}
+
+const verifyResetCodeSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  code: z.string().min(1, 'Reset code is required'),
+});
+
+type VerifyResetCodeResponse = {
+  success: boolean;
+  message: string;
+};
+
+export async function verifyResetCodeAction(data: unknown): Promise<VerifyResetCodeResponse> {
+  const validatedFields = verifyResetCodeSchema.safeParse(data);
+
+  if (!validatedFields.success) {
+    return {
+      success: false,
+      message: validatedFields.error.errors.map((e) => e.message).join(', '),
+    };
+  }
+
+  const { email, code } = validatedFields.data;
+
+  try {
+    const response = await fetch('https://o4tdkmt2.rpcl.app/webhook-test/verify-reset-code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, code }),
+    });
+    
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      return { success: false, message: responseData.message || 'An error occurred.' };
+    }
+
+    return { success: true, message: responseData.message };
+  } catch (error) {
+    return { success: false, message: 'An unexpected error occurred.' };
+  }
+}
+
+const resetPasswordSchema = z.object({
+  email: z.string().email(),
+  code: z.string(),
+  newPassword: z.string().min(6, 'Password must be at least 6 characters long'),
+  confirmNewPassword: z.string(),
+}).refine((data) => data.newPassword === data.confirmNewPassword, {
+    message: "Passwords don't match",
+    path: ['confirmNewPassword'],
+});
+
+type ResetPasswordResponse = {
+  success: boolean;
+  message: string;
+};
+
+export async function resetPasswordAction(data: unknown): Promise<ResetPasswordResponse> {
+  const validatedFields = resetPasswordSchema.safeParse(data);
+
+  if (!validatedFields.success) {
+    return {
+      success: false,
+      message: validatedFields.error.errors.map((e) => e.message).join(', '),
+    };
+  }
+
+  const { email, code, newPassword } = validatedFields.data;
+
+  try {
+    const response = await fetch('https://o4tdkmt2.rpcl.app/webhook-test/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, code, new_password: newPassword }),
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      return { success: false, message: responseData.message || 'An error occurred.' };
+    }
+
+    return { success: true, message: responseData.message };
+  } catch (error) {
+    return { success: false, message: 'An unexpected error occurred.' };
   }
 }
