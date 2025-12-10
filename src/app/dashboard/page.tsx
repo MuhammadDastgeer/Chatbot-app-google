@@ -54,13 +54,6 @@ export default function DashboardPage() {
     router.push('/');
   };
 
-  const previousChats = [
-    'General Questions',
-    'Project Ideas',
-    'Code Review',
-    'Tech Support',
-  ];
-
   return (
     <SidebarProvider>
       <Sidebar>
@@ -77,14 +70,6 @@ export default function DashboardPage() {
         <SidebarContent className="p-2">
             <p className="text-xs text-muted-foreground p-2">Previous Chats</p>
             <SidebarMenu>
-                {previousChats.map((chat, index) => (
-                    <SidebarMenuItem key={index}>
-                        <SidebarMenuButton>
-                            <MessageSquare />
-                            <span>{chat}</span>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                ))}
             </SidebarMenu>
         </SidebarContent>
         <SidebarHeader>
