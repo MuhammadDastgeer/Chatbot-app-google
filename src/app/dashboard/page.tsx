@@ -54,6 +54,10 @@ export default function DashboardPage() {
     router.push('/');
   };
 
+  const handleNewChat = () => {
+    setMessages([]);
+  };
+
   return (
     <SidebarProvider>
       <Sidebar>
@@ -62,7 +66,7 @@ export default function DashboardPage() {
              <AiWithDastgeerLogo />
              <SidebarTrigger />
           </div>
-          <Button variant="default" className="w-full mt-4 !h-12 text-base rounded-full">
+          <Button variant="default" className="w-full mt-4 !h-12 text-base rounded-full" onClick={handleNewChat}>
             <Plus className="mr-2" />
             New Chat
           </Button>
