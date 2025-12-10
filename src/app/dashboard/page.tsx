@@ -57,57 +57,83 @@ export default function DashboardPage() {
   }, [chats, activeChatId]);
 
   const handleSendMessage = async () => {
-    if (newMessage.trim() !== '' && activeChat && !isLoading) {
-      const userMessage: Message = { text: newMessage, isUser: true };
-      const messageToSend = newMessage;
-      
-      const updatedMessages = [...activeChat.messages, userMessage];
-      const firstUserMessage = updatedMessages.find(m => m.isUser)?.text || 'New Chat';
-      const chatTitle = firstUserMessage.substring(0, 25) + (firstUserMessage.length > 25 ? '...' : '');
-
-      setChats((prevChats) =>
-        prevChats.map((c) =>
-          c.id === activeChatId
-            ? { ...c, messages: updatedMessages, title: c.messages.length === 0 ? chatTitle : c.title }
-            : c
-        )
-      );
-
-      setNewMessage('');
-      setIsLoading(true);
-
-      try {
-        const response = await fetch('https://o4tdkmt2.rpcl.app/webhook/Chatbot', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ message: messageToSend }),
-        });
-
-        const data = await response.json();
-        const botMessage: Message = { text: data.response, isUser: false };
-
-        setChats((prevChats) =>
-          prevChats.map((c) =>
-            c.id === activeChatId
-              ? { ...c, messages: [...updatedMessages, botMessage] }
-              : c
-          )
-        );
-      } catch (error) {
-        console.error("Error sending message:", error);
-        const errorMessage: Message = { text: "Something went wrong. Please try again.", isUser: false };
-        setChats((prevChats) =>
-            prevChats.map((c) =>
-              c.id === activeChatId
-                ? { ...c, messages: [...updatedMessages, errorMessage] }
-                : c
-            )
-        );
-      } finally {
-        setIsLoading(false);
+    if (newMessage.trim() === '' || !activeChat || isLoading) return;
+  
+    const userMessage: Message = { text: newMessage, isUser: true };
+    const messageToSend = newMessage;
+  
+    const updatedMessages = [...activeChat.messages, userMessage];
+    const firstUserMessage = updatedMessages.find(m => m.isUser)?.text || 'New Chat';
+    const chatTitle = firstUserMessage.substring(0, 25) + (firstUserMessage.length > 25 ? '...' : '');
+  
+    // Add user message and an empty bot message
+    setChats(prevChats =>
+      prevChats.map(c =>
+        c.id === activeChatId
+          ? { 
+              ...c, 
+              messages: [...updatedMessages, { text: '', isUser: false }],
+              title: c.messages.length === 0 ? chatTitle : c.title
+            }
+          : c
+      )
+    );
+  
+    setNewMessage('');
+    setIsLoading(true);
+  
+    try {
+      const response = await fetch('https://o4tdkmt2.rpcl.app/webhook/Chatbot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: messageToSend }),
+      });
+  
+      if (!response.body) {
+        throw new Error("Response body is null");
       }
+  
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulatedResponse = '';
+  
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+  
+        accumulatedResponse += decoder.decode(value, { stream: true });
+        
+        setChats(prevChats =>
+          prevChats.map(c => {
+            if (c.id === activeChatId) {
+              const lastMessage = c.messages[c.messages.length - 1];
+              if (lastMessage && !lastMessage.isUser) {
+                const newMessages = [...c.messages];
+                newMessages[c.messages.length - 1] = { ...lastMessage, text: accumulatedResponse };
+                return { ...c, messages: newMessages };
+              }
+            }
+            return c;
+          })
+        );
+      }
+  
+    } catch (error) {
+      console.error("Error sending message:", error);
+      const errorMessage: Message = { text: "Something went wrong. Please try again.", isUser: false };
+      setChats(prevChats =>
+        prevChats.map(c => {
+            if (c.id === activeChatId) {
+                const newMessages = [...c.messages];
+                // Replace the empty bot message with the error message
+                newMessages[newMessages.length - 1] = errorMessage;
+                return { ...c, messages: newMessages };
+            }
+            return c;
+        })
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -185,24 +211,15 @@ export default function DashboardPage() {
                     <div key={index} className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}>
                         <Card className={`max-w-xs md:max-w-md lg:max-w-2xl ${message.isUser ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
                             <CardContent className="p-3 prose dark:prose-invert">
-                                {message.text ? (
-                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.text}</ReactMarkdown>
-                                ) : (
+                                {message.text === '' && !message.isUser ? (
                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.text}</ReactMarkdown>
                                 )}
                             </CardContent>
                         </Card>
                     </div>
                 ))}
-                 {isLoading && !activeChat?.messages.some(m => !m.isUser && m.text === '') && (
-                    <div className="flex justify-start">
-                        <Card className="max-w-xs md:max-w-md lg:max-w-2xl bg-muted">
-                            <CardContent className="p-3">
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                            </CardContent>
-                        </Card>
-                    </div>
-                )}
                 {(!activeChat || activeChat.messages.length === 0) && !isLoading && (
                     <div className="flex h-full items-center justify-center">
                         <Card className="w-full max-w-lg text-center">
