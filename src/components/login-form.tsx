@@ -117,7 +117,7 @@ export function LoginForm() {
                   <FormMessage />
                   <div className="flex justify-end">
                     <Link href="/forgot-password" passHref>
-                      <Button variant="link" className="px-0 h-auto text-sm font-medium text-primary">Forgot Password?</Button>
+                      <Button variant="link" className="px-0 h-auto text-sm font-medium">Forgot Password?</Button>
                     </Link>
                   </div>
                 </FormItem>
