@@ -270,6 +270,10 @@ export async function verifyResetCodeAction(data: unknown): Promise<VerifyResetC
     if (!response.ok) {
       return { success: false, message: responseData.message || 'An error occurred.' };
     }
+    
+    if (responseData.message === "Invalid or expired reset code.") {
+        return { success: false, message: responseData.message };
+    }
 
     return { success: true, message: responseData.message };
   } catch (error) {
