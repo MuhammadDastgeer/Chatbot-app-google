@@ -161,7 +161,7 @@ export default function LandingPage() {
       <footer className="border-t bg-muted/40 py-8">
         <div className="container">
           <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 md:ml-4">
               <AiWithDastgeerLogo />
               <p className="text-sm text-muted-foreground">
                 Inspiring Tech Solutions for a Brighter Future.
