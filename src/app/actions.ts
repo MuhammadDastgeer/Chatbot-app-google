@@ -153,12 +153,10 @@ export async function loginUserAction(data: unknown): Promise<LoginUserResponse>
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const errorMessage = errorData.message || `HTTP error! Status: ${response.status}`;
-      console.error('Webhook Error:', errorMessage);
+      const errorData = await response.json().catch(() => ({ message: 'Login failed due to a server error.' }));
       return {
         success: false,
-        message: `Login failed. ${errorMessage}`,
+        message: errorData.message || `HTTP error! Status: ${response.status}`,
       };
     }
 
