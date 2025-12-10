@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
-  title: 'Hitech',
+  title: 'AI WITH DASTGEER',
   description: 'Inspiring Tech Solutions for a Brighter Future',
 };
 

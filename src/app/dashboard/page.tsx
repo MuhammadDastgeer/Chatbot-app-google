@@ -21,10 +21,11 @@ import {
 } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { HitechLogo } from '@/components/hitech-logo';
+import { AiWithDastgeerLogo } from '@/components/ai-with-dastgeer-logo';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Plus, Send, MessageSquare } from 'lucide-react';
+import { Plus, Send, MessageSquare, LogOut } from 'lucide-react';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 type Message = {
   text: string;
@@ -34,6 +35,7 @@ type Message = {
 export default function DashboardPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const router = useRouter();
 
   const handleSendMessage = () => {
     if (newMessage.trim() !== '') {
@@ -49,6 +51,10 @@ export default function DashboardPage() {
     }
   };
 
+  const handleLogout = () => {
+    router.push('/login');
+  };
+
   const previousChats = [
     'General Questions',
     'Project Ideas',
@@ -61,7 +67,7 @@ export default function DashboardPage() {
       <Sidebar>
         <SidebarHeader>
           <div className="flex items-center justify-between">
-             <HitechLogo />
+             <AiWithDastgeerLogo />
              <SidebarTrigger />
           </div>
           <Button variant="default" className="w-full mt-4 !h-12 text-base rounded-full">
@@ -83,7 +89,13 @@ export default function DashboardPage() {
             </SidebarMenu>
         </SidebarContent>
         <SidebarHeader>
-          <ThemeToggle />
+          <div className="flex items-center justify-between">
+            <ThemeToggle />
+            <Button variant="ghost" onClick={handleLogout}>
+              <LogOut className="mr-2" />
+              Logout
+            </Button>
+          </div>
         </SidebarHeader>
       </Sidebar>
       <SidebarInset>
@@ -109,7 +121,7 @@ export default function DashboardPage() {
                     <div className="flex h-full items-center justify-center">
                         <Card className="w-full max-w-lg text-center">
                             <CardHeader>
-                                <CardTitle><HitechLogo /></CardTitle>
+                                <CardTitle><AiWithDastgeerLogo /></CardTitle>
                                 <CardDescription>How can I help you today?</CardDescription>
                             </CardHeader>
                         </Card>
@@ -119,7 +131,7 @@ export default function DashboardPage() {
             <div className="mt-4 border-t pt-4">
                 <div className="relative">
                     <Textarea
-                        placeholder="Message Hitech..."
+                        placeholder="Message AI WITH DASTGEER..."
                         className="pr-16 resize-none"
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
