@@ -103,19 +103,40 @@ export default function DashboardPage() {
   
         accumulatedResponse += decoder.decode(value, { stream: true });
         
-        setChats(prevChats =>
-          prevChats.map(c => {
-            if (c.id === activeChatId) {
-              const lastMessage = c.messages[c.messages.length - 1];
-              if (lastMessage && !lastMessage.isUser) {
-                const newMessages = [...c.messages];
-                newMessages[c.messages.length - 1] = { ...lastMessage, text: accumulatedResponse };
-                return { ...c, messages: newMessages };
-              }
-            }
-            return c;
-          })
-        );
+        try {
+            const parsed = JSON.parse(accumulatedResponse);
+            const textToShow = parsed.output || accumulatedResponse;
+
+            setChats(prevChats =>
+              prevChats.map(c => {
+                if (c.id === activeChatId) {
+                  const lastMessage = c.messages[c.messages.length - 1];
+                  if (lastMessage && !lastMessage.isUser) {
+                    const newMessages = [...c.messages];
+                    newMessages[newMessages.length - 1] = { ...lastMessage, text: textToShow };
+                    return { ...c, messages: newMessages };
+                  }
+                }
+                return c;
+              })
+            );
+        } catch (e) {
+            // In case of incomplete JSON, we just update with what we have.
+            // This might show partial JSON but will be corrected on the next chunk.
+            setChats(prevChats =>
+              prevChats.map(c => {
+                if (c.id === activeChatId) {
+                  const lastMessage = c.messages[c.messages.length - 1];
+                  if (lastMessage && !lastMessage.isUser) {
+                    const newMessages = [...c.messages];
+                    newMessages[newMessages.length - 1] = { ...lastMessage, text: accumulatedResponse };
+                    return { ...c, messages: newMessages };
+                  }
+                }
+                return c;
+              })
+            );
+        }
       }
   
     } catch (error) {
