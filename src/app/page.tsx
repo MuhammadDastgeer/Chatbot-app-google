@@ -158,8 +158,44 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
-      <footer className="flex items-center justify-center h-16 border-t">
-        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} AI WITH DASTGEER. All rights reserved.</p>
+      <footer className="border-t bg-muted/40 py-8">
+        <div className="container">
+          <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
+            <div className="flex flex-col gap-3">
+              <AiWithDastgeerLogo />
+              <p className="text-sm text-muted-foreground">
+                Inspiring Tech Solutions for a Brighter Future.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-3">Features</h3>
+              <ul className="space-y-2">
+                <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">Conversational Chat</Link></li>
+                <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">RAG Chat</Link></li>
+                <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">File Analysis</Link></li>
+                <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">VectorMind</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-3">Company</h3>
+              <ul className="space-y-2">
+                <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">About Us</Link></li>
+                <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">Contact</Link></li>
+                <li><Link href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground">Profile</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-3">Legal</h3>
+              <ul className="space-y-2">
+                <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">Privacy Policy</Link></li>
+                <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">Terms of Service</Link></li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-8 border-t pt-6 flex items-center justify-center">
+            <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} AI WITH DASTGEER. All rights reserved.</p>
+          </div>
+        </div>
       </footer>
     </div>
   );
