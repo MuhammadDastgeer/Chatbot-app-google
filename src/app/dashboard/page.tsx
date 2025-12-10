@@ -52,19 +52,24 @@ export default function DashboardPage() {
 
   const handleSendMessage = async () => {
     if (newMessage.trim() !== '' && activeChat && !isLoading) {
-      setIsLoading(true);
       const userMessage: Message = { text: newMessage, isUser: true };
-      
-      // Update UI immediately with user message
-      const updatedMessages = [...activeChat.messages, userMessage];
-      const firstUserMessage = updatedMessages.find(m => m.isUser)?.text || 'New Chat';
-      const chatTitle = firstUserMessage.substring(0, 25) + (firstUserMessage.length > 25 ? '...' : '');
-      const updatedChat = { ...activeChat, messages: updatedMessages, title: activeChat.messages.length === 0 ? chatTitle : activeChat.title };
-      const updatedChats = chats.map((c) => (c.id === activeChatId ? updatedChat : c));
-      setChats(updatedChats);
-      
       const messageToSend = newMessage;
+      
+      // Update UI with user message and prepare for AI response
+      setChats(prevChats => {
+        const currentChat = prevChats.find(c => c.id === activeChatId);
+        if (!currentChat) return prevChats;
+  
+        const updatedMessages = [...currentChat.messages, userMessage];
+        const firstUserMessage = updatedMessages.find(m => m.isUser)?.text || 'New Chat';
+        const chatTitle = firstUserMessage.substring(0, 25) + (firstUserMessage.length > 25 ? '...' : '');
+        const updatedChat = { ...currentChat, messages: updatedMessages, title: currentChat.messages.length === 0 ? chatTitle : currentChat.title };
+        
+        return prevChats.map(c => (c.id === activeChatId ? updatedChat : c));
+      });
+
       setNewMessage('');
+      setIsLoading(true);
 
       try {
         const response = await fetch('https://o4tdkmt2.rpcl.app/webhook-test/Chatbot', {
@@ -113,13 +118,18 @@ export default function DashboardPage() {
   };
 
   const handleNewChat = () => {
-    const newChat: Chat = {
-      id: `chat-${Date.now()}`,
-      title: 'New Chat',
-      messages: [],
-    };
-    setChats((prev) => [...prev, newChat]);
-    setActiveChatId(newChat.id);
+    if (activeChat && activeChat.messages.length > 0) {
+        const newChat: Chat = {
+          id: `chat-${Date.now()}`,
+          title: 'New Chat',
+          messages: [],
+        };
+        setChats((prev) => [...prev, newChat]);
+        setActiveChatId(newChat.id);
+    } else if (activeChat) {
+        // If current chat is empty, just clear it
+        setChats(prev => prev.map(c => c.id === activeChatId ? {...c, messages: []} : c));
+    }
   };
   
   const switchChat = (chatId: string) => {
@@ -132,7 +142,7 @@ export default function DashboardPage() {
         <SidebarHeader>
           <div className="flex items-center justify-between">
              <AiWithDastgeerLogo />
-             <SidebarTrigger />
+             <SidebarTrigger className="hidden md:flex"/>
           </div>
           <Button variant="default" className="w-full mt-4 !h-12 text-base rounded-full" onClick={handleNewChat}>
             <Plus className="mr-2" />
@@ -142,7 +152,7 @@ export default function DashboardPage() {
         <SidebarContent className="p-2">
             <p className="text-xs text-muted-foreground p-2">Previous Chats</p>
             <SidebarMenu>
-                 {chats.filter(c => c.messages.length > 0 && c.title !== 'New Chat').map(chat => (
+                 {chats.filter(c => c.id !== activeChatId && c.messages.length > 0).map(chat => (
                     <SidebarMenuItem key={chat.id}>
                         <SidebarMenuButton onClick={() => switchChat(chat.id)} isActive={activeChatId === chat.id}>
                             <MessageSquare />
@@ -165,7 +175,7 @@ export default function DashboardPage() {
         <div className="flex flex-col h-screen bg-background">
           <header className="sticky top-0 z-50 flex items-center justify-between w-full h-14 px-4 border-b shrink-0 bg-background">
             <div className="flex items-center gap-2">
-                <SidebarTrigger />
+                <SidebarTrigger className="md:hidden"/>
                 <h1 className="text-xl font-semibold">{activeChat?.title}</h1>
             </div>
             <div className="flex items-center gap-2">
