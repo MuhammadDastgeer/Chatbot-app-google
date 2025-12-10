@@ -1,25 +1,147 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ThemeToggle } from "@/components/theme-toggle";
+'use client';
+
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { HitechLogo } from '@/components/hitech-logo';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { Plus, Send, MessageSquare } from 'lucide-react';
+import { useState } from 'react';
+
+type Message = {
+  text: string;
+  isUser: boolean;
+};
 
 export default function DashboardPage() {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState('');
+
+  const handleSendMessage = () => {
+    if (newMessage.trim() !== '') {
+      setMessages([...messages, { text: newMessage, isUser: true }]);
+      // Simulate a bot response
+      setTimeout(() => {
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { text: "This is a simulated response.", isUser: false },
+        ]);
+      }, 1000);
+      setNewMessage('');
+    }
+  };
+
+  const previousChats = [
+    'General Questions',
+    'Project Ideas',
+    'Code Review',
+    'Tech Support',
+  ];
+
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 max-w-screen-2xl items-center justify-between">
-          <h1 className="text-2xl font-bold">Dashboard</h1>
+    <SidebarProvider>
+      <Sidebar>
+        <SidebarHeader>
+          <div className="flex items-center justify-between">
+             <HitechLogo />
+             <SidebarTrigger />
+          </div>
+          <Button variant="default" className="w-full mt-4 !h-12 text-base rounded-full">
+            <Plus className="mr-2" />
+            New Chat
+          </Button>
+        </SidebarHeader>
+        <SidebarContent className="p-2">
+            <p className="text-xs text-muted-foreground p-2">Previous Chats</p>
+            <SidebarMenu>
+                {previousChats.map((chat, index) => (
+                    <SidebarMenuItem key={index}>
+                        <SidebarMenuButton>
+                            <MessageSquare />
+                            <span>{chat}</span>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                ))}
+            </SidebarMenu>
+        </SidebarContent>
+        <SidebarHeader>
           <ThemeToggle />
+        </SidebarHeader>
+      </Sidebar>
+      <SidebarInset>
+        <div className="flex flex-col h-screen bg-background">
+          <header className="sticky top-0 z-50 flex items-center justify-between w-full h-14 px-4 border-b shrink-0 bg-background">
+            <div className="flex items-center gap-2">
+                <SidebarTrigger className="md:hidden"/>
+                <h1 className="text-xl font-semibold">New Chat</h1>
+            </div>
+          </header>
+          <main className="flex-1 flex flex-col p-4 overflow-hidden">
+            <div className="flex-1 overflow-y-auto space-y-4 pr-4">
+                {messages.map((message, index) => (
+                    <div key={index} className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}>
+                        <Card className={`max-w-xs md:max-w-md lg:max-w-2xl ${message.isUser ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                            <CardContent className="p-3">
+                                <p>{message.text}</p>
+                            </CardContent>
+                        </Card>
+                    </div>
+                ))}
+                {messages.length === 0 && (
+                    <div className="flex h-full items-center justify-center">
+                        <Card className="w-full max-w-lg text-center">
+                            <CardHeader>
+                                <CardTitle><HitechLogo /></CardTitle>
+                                <CardDescription>How can I help you today?</CardDescription>
+                            </CardHeader>
+                        </Card>
+                    </div>
+                )}
+            </div>
+            <div className="mt-4 border-t pt-4">
+                <div className="relative">
+                    <Textarea
+                        placeholder="Message Hitech..."
+                        className="pr-16 resize-none"
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSendMessage();
+                            }
+                        }}
+                    />
+                    <Button 
+                        size="icon" 
+                        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full !h-10 !w-10"
+                        onClick={handleSendMessage}
+                    >
+                        <Send />
+                    </Button>
+                </div>
+            </div>
+          </main>
         </div>
-      </header>
-      <main className="flex flex-1 flex-col items-center justify-center p-4">
-        <Card className="w-full max-w-md shadow-lg bg-card">
-            <CardHeader>
-            <CardTitle className="text-3xl text-center">Dashboard</CardTitle>
-            </CardHeader>
-            <CardContent>
-            <p className="text-center text-muted-foreground">Welcome to your dashboard!</p>
-            </CardContent>
-        </Card>
-      </main>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
