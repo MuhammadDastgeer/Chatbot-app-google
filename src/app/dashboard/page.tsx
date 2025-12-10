@@ -100,7 +100,7 @@ export default function DashboardPage() {
         <div className="flex flex-col h-screen bg-background">
           <header className="sticky top-0 z-50 flex items-center justify-between w-full h-14 px-4 border-b shrink-0 bg-background">
             <div className="flex items-center gap-2">
-                <SidebarTrigger className="md:hidden"/>
+                <SidebarTrigger />
                 <h1 className="text-xl font-semibold">New Chat</h1>
             </div>
             <div className="flex items-center gap-2">
