@@ -22,10 +22,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { AiWithDastgeerLogo } from '@/components/ai-with-dastgeer-logo';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Plus, Send, MessageSquare, LogOut, Loader2, Paperclip } from 'lucide-react';
-import { useState, useMemo, useRef } from 'react';
+import { Plus, Send, MessageSquare, LogOut, Loader2 } from 'lucide-react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useToast } from '@/hooks/use-toast';
 
 type Message = {
   text: string;
@@ -46,8 +45,6 @@ export default function DashboardPage() {
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
 
   const activeChat = useMemo(() => {
     return chats.find((c) => c.id === activeChatId);
@@ -112,73 +109,6 @@ export default function DashboardPage() {
       } finally {
         setIsLoading(false);
       }
-    }
-  };
-
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !activeChat) {
-      return;
-    }
-
-    setIsLoading(true);
-    
-    const userMessage: Message = { text: `You have uploaded: ${file.name}`, isUser: true };
-    setChats(prevChats => {
-        const currentChat = prevChats.find(c => c.id === activeChatId);
-        if (!currentChat) return prevChats;
-
-        const updatedMessages = [...currentChat.messages, userMessage];
-        const updatedChat = { ...currentChat, messages: updatedMessages };
-        return prevChats.map(c => c.id === activeChatId ? updatedChat : c);
-    });
-
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-        const response = await fetch('https://o4tdkmt2.rpcl.app/webhook-test/Chatbot', {
-            method: 'POST',
-            body: formData,
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const botMessage: Message = { text: data.output || "File processed.", isUser: false };
-
-        setChats((prevChats) => {
-            const currentChat = prevChats.find(c => c.id === activeChatId);
-            if (!currentChat) return prevChats;
-
-            const messagesWithBot = [...currentChat.messages, botMessage];
-            const updatedCurrentChat = {...currentChat, messages: messagesWithBot };
-            return prevChats.map(c => c.id === activeChatId ? updatedCurrentChat : c);
-        });
-    } catch (error) {
-        console.error("Error uploading file:", error);
-        toast({
-            variant: "destructive",
-            title: "Upload Failed",
-            description: "Could not upload the file. Please try again.",
-        });
-        const errorMessage: Message = { text: "File upload failed. Please try again.", isUser: false };
-         setChats((prevChats) => {
-            const currentChat = prevChats.find(c => c.id === activeChatId);
-            if (!currentChat) return prevChats;
-
-            const messagesWithError = [...currentChat.messages, errorMessage];
-            const updatedCurrentChat = {...currentChat, messages: messagesWithError };
-            return prevChats.map(c => c.id === activeChatId ? updatedCurrentChat : c);
-        });
-    } finally {
-        setIsLoading(false);
-        // Reset file input
-        if(fileInputRef.current) {
-            fileInputRef.current.value = "";
-        }
     }
   };
 
@@ -284,19 +214,9 @@ export default function DashboardPage() {
             </div>
             <div className="mt-4 border-t pt-4">
                 <div className="relative">
-                    <input type="file" ref={fileInputRef} onChange={handleFileChange} style={{ display: 'none' }} />
-                    <Button 
-                        size="icon" 
-                        variant="ghost"
-                        className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full !h-10 !w-10"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isLoading}
-                    >
-                       <Paperclip />
-                    </Button>
                     <Textarea
                         placeholder="Message AI WITH DASTGEER..."
-                        className="pl-14 pr-16 resize-none bg-muted border-none"
+                        className="pr-16 resize-none bg-muted border-none"
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         onKeyDown={(e) => {
