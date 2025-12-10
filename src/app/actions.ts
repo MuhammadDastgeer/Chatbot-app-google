@@ -108,6 +108,13 @@ export async function verifyEmailAction(data: unknown): Promise<VerifyEmailRespo
     }
 
     const responseData = await response.json();
+    if (responseData.message === 'Email verified successfully! You can now log in.') {
+        return {
+          success: true,
+          message: responseData.message
+        };
+    }
+    
     return {
       success: true,
       message: responseData.message || 'Email verified successfully!',
@@ -152,15 +159,22 @@ export async function loginUserAction(data: unknown): Promise<LoginUserResponse>
       body: JSON.stringify({ email, password }),
     });
 
+    const responseData = await response.json().catch(() => ({ message: 'Login failed due to a server error.' }));
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Login failed due to a server error.' }));
       return {
         success: false,
-        message: errorData.message || `HTTP error! Status: ${response.status}`,
+        message: responseData.message || `HTTP error! Status: ${response.status}`,
       };
     }
 
-    const responseData = await response.json();
+    if (responseData.message === 'Invalid password') {
+        return {
+            success: false,
+            message: responseData.message,
+        };
+    }
+
     return {
       success: true,
       message: responseData.message || 'Login successful!',

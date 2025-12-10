@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Mail, Key, Loader2 } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +36,7 @@ const formSchema = z.object({
 
 function EmailVerificationFormComponent() {
   const { toast } = useToast();
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
@@ -64,7 +65,9 @@ function EmailVerificationFormComponent() {
         title: "Success!",
         description: result.message,
       });
-      // Optionally, redirect to a dashboard or login page
+      if (result.message === 'Email verified successfully! You can now log in.') {
+        router.push("/login");
+      }
     } else {
       toast({
         variant: "destructive",
