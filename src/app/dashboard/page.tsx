@@ -26,6 +26,8 @@ import { Plus, Send, MessageSquare, LogOut, Loader2 } from 'lucide-react';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 type Message = {
   text: string;
@@ -189,8 +191,8 @@ export default function DashboardPage() {
                 {activeChat && activeChat.messages.map((message, index) => (
                     <div key={index} className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}>
                         <Card className={`max-w-xs md:max-w-md lg:max-w-2xl ${message.isUser ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                            <CardContent className="p-3">
-                                <p>{message.text}</p>
+                            <CardContent className="p-3 prose dark:prose-invert">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.text}</ReactMarkdown>
                             </CardContent>
                         </Card>
                     </div>

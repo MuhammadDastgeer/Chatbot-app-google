@@ -60,4 +60,23 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+  .prose {
+    @apply text-foreground;
+  }
+  .prose code {
+    @apply rounded bg-muted px-1.5 py-1 font-mono text-sm;
+  }
+  .prose pre {
+    @apply rounded-md bg-muted p-4 font-mono text-sm;
+    overflow-x: auto;
+  }
+  .prose pre code {
+    @apply bg-transparent p-0;
+  }
+  .prose p {
+    margin: 0;
+  }
+  .dark .prose {
+    @apply text-foreground;
+  }
 }
