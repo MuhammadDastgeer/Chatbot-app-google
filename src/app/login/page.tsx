@@ -1,10 +1,13 @@
+'use client';
+
 import { LoginForm } from '@/components/login-form';
 import { ThemeToggle } from '@/components/theme-toggle';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-
+import { useAuth } from '@/hooks/use-auth';
 
 export default function LoginPage() {
+  useAuth();
   return (
     <main className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-black p-4">
         <div className="absolute top-4 right-4">

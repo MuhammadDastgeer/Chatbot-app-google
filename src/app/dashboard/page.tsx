@@ -23,8 +23,9 @@ import { Button } from '@/components/ui/button';
 import { AiWithDastgeerLogo } from '@/components/ai-with-dastgeer-logo';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Plus, Send, MessageSquare, LogOut, Loader2 } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/use-auth';
 
 type Message = {
   text: string;
@@ -38,6 +39,9 @@ type Chat = {
 };
 
 export default function DashboardPage() {
+  const { logout } = useAuth();
+  useAuth(); // To trigger the auth check effect
+
   const [chats, setChats] = useState<Chat[]>([
     { id: `chat-${Date.now()}`, title: 'New Chat', messages: [] },
   ]);
@@ -113,7 +117,7 @@ export default function DashboardPage() {
   };
 
   const handleLogout = () => {
-    router.push('/');
+    logout();
   };
 
   const handleNewChat = () => {
