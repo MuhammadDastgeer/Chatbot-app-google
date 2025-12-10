@@ -5,7 +5,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Image from 'next/image';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { MessageCircle, FileText, FileSearch } from 'lucide-react';
+import { MessageCircle, FileText, FileSearch, Bot, BrainCircuit, Link2 } from 'lucide-react';
 
 
 export default function LandingPage() {
@@ -75,7 +75,7 @@ export default function LandingPage() {
                 </p>
               </div>
             </div>
-            <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 md:gap-12 lg:grid-cols-3 mt-12">
+            <div className="mx-auto grid max-w-6xl items-start gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-12">
               <Card className="text-left">
                 <CardHeader>
                   <div className="flex items-center gap-4">
@@ -112,6 +112,45 @@ export default function LandingPage() {
                   </div>
                   <CardDescription className="pt-2">
                     Analyze complex data from various file types. Extract key information, summarize content, and get actionable insights quickly.
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+              <Card className="text-left">
+                <CardHeader>
+                  <div className="flex items-center gap-4">
+                    <div className="bg-primary/10 p-3 rounded-full">
+                      <Link2 className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle>MCPLink Chatbot</CardTitle>
+                  </div>
+                  <CardDescription className="pt-2">
+                    Seamlessly integrates with MCPLink to provide contextual assistance and streamline your workflow.
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+              <Card className="text-left">
+                <CardHeader>
+                  <div className="flex items-center gap-4">
+                    <div className="bg-primary/10 p-3 rounded-full">
+                        <Bot className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle>DeepRAG Chatbot</CardTitle>
+                  </div>
+                  <CardDescription className="pt-2">
+                    Leverage advanced retrieval techniques for more accurate and in-depth answers from your knowledge base.
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+              <Card className="text-left">
+                <CardHeader>
+                  <div className="flex items-center gap-4">
+                    <div className="bg-primary/10 p-3 rounded-full">
+                      <BrainCircuit className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle>VectorMind Assistant</CardTitle>
+                  </div>
+                  <CardDescription className="pt-2">
+                    Harness the power of vector embeddings for superior semantic search and intelligent recommendations.
                   </CardDescription>
                 </CardHeader>
               </Card>
