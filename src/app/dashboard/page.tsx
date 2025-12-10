@@ -51,7 +51,7 @@ export default function DashboardPage() {
   };
 
   const handleLogout = () => {
-    router.push('/login');
+    router.push('/');
   };
 
   const previousChats = [
