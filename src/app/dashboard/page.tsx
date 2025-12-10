@@ -15,7 +15,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -89,7 +88,7 @@ export default function DashboardPage() {
             </SidebarMenu>
         </SidebarContent>
         <SidebarHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between w-full">
             <ThemeToggle />
             <Button variant="ghost" onClick={handleLogout}>
               <LogOut className="mr-2" />
@@ -104,6 +103,9 @@ export default function DashboardPage() {
             <div className="flex items-center gap-2">
                 <SidebarTrigger className="md:hidden"/>
                 <h1 className="text-xl font-semibold">New Chat</h1>
+            </div>
+            <div className="md:hidden">
+              <ThemeToggle />
             </div>
           </header>
           <main className="flex-1 flex flex-col p-4 overflow-hidden">
