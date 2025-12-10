@@ -1,13 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { HitechLogo } from "@/components/hitech-logo";
 
 export default function DashboardPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
        <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 max-w-screen-2xl items-center justify-between">
-          <HitechLogo />
+        <div className="container flex h-14 max-w-screen-2xl items-center justify-end">
           <ThemeToggle />
         </div>
       </header>

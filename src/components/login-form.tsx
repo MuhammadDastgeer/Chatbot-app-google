@@ -20,7 +20,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { loginUserAction } from "@/app/actions";
-import { SocialLogins } from "./social-logins";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -110,8 +109,6 @@ export function LoginForm() {
                 <Button variant="link" className="px-0 h-auto text-sm font-medium text-muted-foreground hover:text-primary">Forgot password?</Button>
             </Link>
         </div>
-
-        <SocialLogins label="Or Log in with" />
         
         <p className="mt-8 text-center text-sm text-muted-foreground">
           Don't have an account?{" "}

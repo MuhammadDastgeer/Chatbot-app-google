@@ -20,7 +20,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { registerUserAction } from "@/app/actions";
-import { SocialLogins } from "./social-logins";
 
 const formSchema = z
   .object({
@@ -142,8 +141,6 @@ export function UserRegistrationForm() {
           </Button>
         </form>
       </Form>
-      
-      <SocialLogins label="Or Sign up with" />
 
       <p className="mt-8 text-center text-sm text-muted-foreground">
           Already have an account?{" "}
