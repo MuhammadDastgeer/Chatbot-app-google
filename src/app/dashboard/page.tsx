@@ -88,8 +88,7 @@ export default function DashboardPage() {
             </SidebarMenu>
         </SidebarContent>
         <SidebarHeader>
-          <div className="flex items-center justify-between w-full">
-            <ThemeToggle />
+          <div className="flex items-center justify-end w-full">
             <Button variant="ghost" onClick={handleLogout}>
               <LogOut className="mr-2" />
               Logout
@@ -105,9 +104,7 @@ export default function DashboardPage() {
                 <h1 className="text-xl font-semibold">New Chat</h1>
             </div>
             <div className="flex items-center gap-2">
-                <div className="md:hidden">
-                    <ThemeToggle />
-                </div>
+                <ThemeToggle />
             </div>
           </header>
           <main className="flex-1 flex flex-col p-4 overflow-hidden">
