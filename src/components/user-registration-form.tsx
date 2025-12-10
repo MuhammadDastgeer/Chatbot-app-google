@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -46,8 +47,8 @@ const formSchema = z
 
 export function UserRegistrationForm() {
   const { toast } = useToast();
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -61,19 +62,17 @@ export function UserRegistrationForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    setSuccessMessage("");
 
     const result = await registerUserAction(values);
 
     setIsLoading(false);
 
-    if (result.success) {
-      setSuccessMessage(result.message);
+    if (result.success && result.email) {
       toast({
         title: "Success!",
         description: result.message,
-      })
-      form.reset();
+      });
+      router.push(`/verify-email?email=${encodeURIComponent(result.email)}`);
     } else {
       toast({
         variant: "destructive",

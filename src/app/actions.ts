@@ -17,6 +17,7 @@ const registerUserSchema = z
 type RegisterUserResponse = {
   success: boolean;
   message: string;
+  email?: string;
 };
 
 export async function registerUserAction(data: unknown): Promise<RegisterUserResponse> {
@@ -54,6 +55,62 @@ export async function registerUserAction(data: unknown): Promise<RegisterUserRes
     return {
       success: true,
       message: responseData.message || 'Registration successful!',
+      email: email,
+    };
+  } catch (error) {
+    console.error('Fetch Error:', error);
+    return {
+      success: false,
+      message: 'An unexpected error occurred. Please check your network connection and try again.',
+    };
+  }
+}
+
+const verifyEmailSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  code: z.string().min(1, 'Verification code is required'),
+});
+
+type VerifyEmailResponse = {
+  success: boolean;
+  message: string;
+};
+
+export async function verifyEmailAction(data: unknown): Promise<VerifyEmailResponse> {
+  const validatedFields = verifyEmailSchema.safeParse(data);
+
+  if (!validatedFields.success) {
+    return {
+      success: false,
+      message: validatedFields.error.errors.map((e) => e.message).join(', '),
+    };
+  }
+
+  const { email, code } = validatedFields.data;
+
+  try {
+    const response = await fetch('https://o4tdkmt2.rpcl.app/webhook-test/verify-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, code }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.message || `HTTP error! Status: ${response.status}`;
+      console.error('Webhook Error:', errorMessage);
+      return {
+        success: false,
+        message: `Verification failed. ${errorMessage}`,
+      };
+    }
+
+    const responseData = await response.json();
+    return {
+      success: true,
+      message: responseData.message || 'Email verified successfully!',
     };
   } catch (error) {
     console.error('Fetch Error:', error);
