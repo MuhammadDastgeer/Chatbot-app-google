@@ -75,7 +75,7 @@ export default function LandingPage() {
                 </p>
               </div>
             </div>
-            <div className="mx-auto grid max-w-6xl items-start gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-12">
+            <div className="mx-auto grid max-w-6xl items-start gap-8 sm:grid-cols-2 lg:grid-cols-3 mt-12">
               <Card className="text-left">
                 <CardHeader>
                   <div className="flex items-center gap-4">
