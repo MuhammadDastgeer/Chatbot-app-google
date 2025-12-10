@@ -4,6 +4,9 @@ import { AiWithDastgeerLogo } from '@/components/ai-with-dastgeer-logo';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Image from 'next/image';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { MessageCircle, FileText, FileSearch } from 'lucide-react';
+
 
 export default function LandingPage() {
   const heroImage = PlaceHolderImages.find(p => p.id === 'landing-page-hero');
@@ -58,6 +61,60 @@ export default function LandingPage() {
                   data-ai-hint={heroImage.imageHint}
                 />
               )}
+            </div>
+          </div>
+        </section>
+        <section className="w-full py-12 md:py-24 lg:py-32 bg-muted">
+          <div className="container px-4 md:px-6">
+            <div className="flex flex-col items-center justify-center space-y-4 text-center">
+              <div className="space-y-2">
+                <div className="inline-block rounded-lg bg-secondary px-3 py-1 text-sm">Key Features</div>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Explore What's Possible</h2>
+                <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                  Our AI assistant is packed with features to help you be more productive and creative.
+                </p>
+              </div>
+            </div>
+            <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 md:gap-12 lg:grid-cols-3 mt-12">
+              <Card className="text-left">
+                <CardHeader>
+                  <div className="flex items-center gap-4">
+                    <div className="bg-primary/10 p-3 rounded-full">
+                      <MessageCircle className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle>Conversational Chatbot</CardTitle>
+                  </div>
+                  <CardDescription className="pt-2">
+                    Engage in natural, human-like conversations. Get instant answers, brainstorm ideas, or just have a friendly chat.
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+              <Card className="text-left">
+                <CardHeader>
+                  <div className="flex items-center gap-4">
+                    <div className="bg-primary/10 p-3 rounded-full">
+                        <FileText className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle>RAG Chatbot</CardTitle>
+                  </div>
+                  <CardDescription className="pt-2">
+                    Upload your documents and get insights. Our Retrieval-Augmented Generation model can understand and answer questions based on your files.
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+              <Card className="text-left">
+                <CardHeader>
+                  <div className="flex items-center gap-4">
+                    <div className="bg-primary/10 p-3 rounded-full">
+                      <FileSearch className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle>File Analysis</CardTitle>
+                  </div>
+                  <CardDescription className="pt-2">
+                    Analyze complex data from various file types. Extract key information, summarize content, and get actionable insights quickly.
+                  </CardDescription>
+                </CardHeader>
+              </Card>
             </div>
           </div>
         </section>
