@@ -268,10 +268,17 @@ export async function verifyResetCodeAction(data: unknown): Promise<VerifyResetC
     const responseData = await response.json();
 
     if (!response.ok) {
+      if (responseData.message === 'Invalid or expired reset code') {
+        return { success: false, message: responseData.message };
+      }
       return { success: false, message: responseData.message || 'An error occurred.' };
     }
 
-    return { success: true, message: responseData.message };
+    if (responseData.message === 'Code verified successfully!') {
+      return { success: true, message: responseData.message };
+    }
+    
+    return { success: false, message: 'An unknown error occurred.' };
   } catch (error) {
     return { success: false, message: 'An unexpected error occurred.' };
   }

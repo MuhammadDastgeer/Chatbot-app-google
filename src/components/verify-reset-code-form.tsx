@@ -65,7 +65,9 @@ function VerifyResetCodeFormComponent() {
         title: "Success!",
         description: result.message,
       });
-      router.push(`/reset-password?email=${encodeURIComponent(values.email)}&code=${encodeURIComponent(values.code)}`);
+      if (result.message === 'Code verified successfully!') {
+        router.push(`/reset-password?email=${encodeURIComponent(values.email)}&code=${encodeURIComponent(values.code)}`);
+      }
     } else {
       toast({
         variant: "destructive",
