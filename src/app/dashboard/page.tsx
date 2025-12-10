@@ -85,7 +85,7 @@ export default function DashboardPage() {
         }
 
         const data = await response.json();
-        const botMessage: Message = { text: data.response || "Sorry, I didn't get that.", isUser: false };
+        const botMessage: Message = { text: data.output || "Sorry, I didn't get that.", isUser: false };
 
         setChats((prevChats) => {
             const currentChat = prevChats.find(c => c.id === activeChatId);
@@ -208,7 +208,7 @@ export default function DashboardPage() {
                         <Card className="w-full max-w-lg text-center">
                             <CardHeader>
                                 <CardTitle><AiWithDastgeerLogo /></CardTitle>
-                                <CardDescription>How can I help you today?</CardDescription>
+                                <CardDescription>How can I help you today? I’m a smart genius assistant.</CardDescription>
                             </CardHeader>
                         </Card>
                     </div>
@@ -218,7 +218,7 @@ export default function DashboardPage() {
                 <div className="relative">
                     <Textarea
                         placeholder="Message AI WITH DASTGEER..."
-                        className="pr-16 resize-none"
+                        className="pr-16 resize-none bg-muted border-none"
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         onKeyDown={(e) => {
