@@ -2,11 +2,17 @@
 
 import { z } from 'zod';
 
-const registerUserSchema = z.object({
-  username: z.string().min(3, 'Username must be at least 3 characters long'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters long'),
-});
+const registerUserSchema = z
+  .object({
+    username: z.string().min(3, 'Username must be at least 3 characters long'),
+    email: z.string().email('Invalid email address'),
+    password: z.string().min(6, 'Password must be at least 6 characters long'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
+  });
 
 type RegisterUserResponse = {
   success: boolean;
@@ -26,7 +32,7 @@ export async function registerUserAction(data: unknown): Promise<RegisterUserRes
   const { username, email, password } = validatedFields.data;
 
   try {
-    const response = await fetch('https://o4tdkmt2.rpcl.app/webhook-test/register-user', {
+    const response = await fetch('https://o4tdkmt2.rpcl.app/webhook-test/signup', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
