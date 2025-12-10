@@ -22,7 +22,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { AiWithDastgeerLogo } from '@/components/ai-with-dastgeer-logo';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Plus, Send, MessageSquare, LogOut } from 'lucide-react';
+import { Plus, Send, MessageSquare, LogOut, Loader2 } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -43,40 +43,68 @@ export default function DashboardPage() {
   ]);
   const [activeChatId, setActiveChatId] = useState<string>(chats[0].id);
   const [newMessage, setNewMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const activeChat = useMemo(() => {
     return chats.find((c) => c.id === activeChatId);
   }, [chats, activeChatId]);
 
-  const handleSendMessage = () => {
-    if (newMessage.trim() !== '' && activeChat) {
+  const handleSendMessage = async () => {
+    if (newMessage.trim() !== '' && activeChat && !isLoading) {
+      setIsLoading(true);
       const userMessage: Message = { text: newMessage, isUser: true };
-      const updatedMessages = [...activeChat.messages, userMessage];
       
+      // Update UI immediately with user message
+      const updatedMessages = [...activeChat.messages, userMessage];
       const firstUserMessage = updatedMessages.find(m => m.isUser)?.text || 'New Chat';
       const chatTitle = firstUserMessage.substring(0, 25) + (firstUserMessage.length > 25 ? '...' : '');
-
       const updatedChat = { ...activeChat, messages: updatedMessages, title: activeChat.messages.length === 0 ? chatTitle : activeChat.title };
-      
       const updatedChats = chats.map((c) => (c.id === activeChatId ? updatedChat : c));
-
       setChats(updatedChats);
+      
+      const messageToSend = newMessage;
+      setNewMessage('');
 
-      // Simulate a bot response
-      setTimeout(() => {
+      try {
+        const response = await fetch('https://o4tdkmt2.rpcl.app/webhook-test/Chatbot', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ message: messageToSend }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const botMessage: Message = { text: data.response || "Sorry, I didn't get that.", isUser: false };
+
         setChats((prevChats) => {
             const currentChat = prevChats.find(c => c.id === activeChatId);
             if (!currentChat) return prevChats;
 
-            const botMessage: Message = { text: "This is a simulated response.", isUser: false };
             const messagesWithBot = [...currentChat.messages, botMessage];
             const updatedCurrentChat = {...currentChat, messages: messagesWithBot };
             return prevChats.map(c => c.id === activeChatId ? updatedCurrentChat : c);
         });
-      }, 1000);
 
-      setNewMessage('');
+      } catch (error) {
+        console.error("Error sending message:", error);
+        const errorMessage: Message = { text: "Something went wrong. Please try again.", isUser: false };
+        setChats((prevChats) => {
+            const currentChat = prevChats.find(c => c.id === activeChatId);
+            if (!currentChat) return prevChats;
+
+            const messagesWithError = [...currentChat.messages, errorMessage];
+            const updatedCurrentChat = {...currentChat, messages: messagesWithError };
+            return prevChats.map(c => c.id === activeChatId ? updatedCurrentChat : c);
+        });
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -114,7 +142,7 @@ export default function DashboardPage() {
         <SidebarContent className="p-2">
             <p className="text-xs text-muted-foreground p-2">Previous Chats</p>
             <SidebarMenu>
-                 {chats.filter(c => c.messages.length > 0).map(chat => (
+                 {chats.filter(c => c.messages.length > 0 && c.title !== 'New Chat').map(chat => (
                     <SidebarMenuItem key={chat.id}>
                         <SidebarMenuButton onClick={() => switchChat(chat.id)} isActive={activeChatId === chat.id}>
                             <MessageSquare />
@@ -155,7 +183,17 @@ export default function DashboardPage() {
                         </Card>
                     </div>
                 ))}
-                {(!activeChat || activeChat.messages.length === 0) && (
+                {isLoading && (
+                    <div className="flex justify-start">
+                         <Card className="max-w-xs md:max-w-md lg:max-w-2xl bg-muted">
+                            <CardContent className="p-3 flex items-center gap-2">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span>Thinking...</span>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
+                {(!activeChat || activeChat.messages.length === 0) && !isLoading && (
                     <div className="flex h-full items-center justify-center">
                         <Card className="w-full max-w-lg text-center">
                             <CardHeader>
@@ -179,14 +217,15 @@ export default function DashboardPage() {
                                 handleSendMessage();
                             }
                         }}
+                        disabled={isLoading}
                     />
                     <Button 
                         size="icon" 
                         className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full !h-10 !w-10"
                         onClick={handleSendMessage}
-                        disabled={!newMessage.trim()}
+                        disabled={!newMessage.trim() || isLoading}
                     >
-                        <Send />
+                        {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send />}
                     </Button>
                 </div>
             </div>
