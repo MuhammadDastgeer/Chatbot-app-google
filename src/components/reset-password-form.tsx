@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Loader2 } from "lucide-react";
-import Link from 'next/link';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +13,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -81,13 +79,13 @@ function ResetPasswordFormComponent() {
   }
 
   return (
-    <div className="w-full bg-card p-8 rounded-2xl shadow-lg">
-        <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold">Reset Password</h1>
-            <p className="text-sm text-muted-foreground mt-2">Enter your new password below.</p>
+    <div className="w-full">
+        <div className="text-left mb-8">
+            <h1 className="text-4xl font-bold">Reset Password</h1>
+            <p className="text-sm text-muted-foreground mt-2">Create your new password.</p>
         </div>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <input type="hidden" {...form.register("email")} />
             <input type="hidden" {...form.register("code")} />
             <FormField
@@ -95,9 +93,8 @@ function ResetPasswordFormComponent() {
               name="newPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>New Password</FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} />
+                    <Input type="password" placeholder="New Password" {...field} className="bg-gray-100 dark:bg-gray-800 border-none"/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -108,26 +105,19 @@ function ResetPasswordFormComponent() {
               name="confirmNewPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirm New Password</FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} />
+                    <Input type="password" placeholder="Confirm New Password" {...field} className="bg-gray-100 dark:bg-gray-800 border-none"/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full mt-6 !h-12 text-base" disabled={isLoading}>
+            <Button type="submit" className="w-full max-w-xs mx-auto block !h-12 text-base rounded-full" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Reset Password
             </Button>
           </form>
         </Form>
-        <p className="mt-8 text-center text-sm text-muted-foreground">
-            Suddenly remembered?{" "}
-            <Link href="/login" className="font-medium text-primary hover:underline">
-                Sign In
-            </Link>
-        </p>
     </div>
   );
 }
