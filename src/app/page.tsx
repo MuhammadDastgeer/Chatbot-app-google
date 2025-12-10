@@ -2,8 +2,12 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { AiWithDastgeerLogo } from '@/components/ai-with-dastgeer-logo';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
+import Image from 'next/image';
 
 export default function LandingPage() {
+  const heroImage = PlaceHolderImages.find(p => p.id === 'landing-page-hero');
+  
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <header className="sticky top-0 z-50 flex items-center justify-between w-full h-16 px-4 md:px-6 border-b shrink-0 bg-background/80 backdrop-blur-sm">
@@ -44,14 +48,16 @@ export default function LandingPage() {
                   </Link>
                 </div>
               </div>
-              <img
-                src="https://picsum.photos/seed/ai-bot/600/400"
-                width="600"
-                height="400"
-                alt="AI Chat"
-                className="mx-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full lg:order-last lg:aspect-square"
-                data-ai-hint="robot abstract"
-              />
+              {heroImage && (
+                <Image
+                  src={heroImage.imageUrl}
+                  width="600"
+                  height="400"
+                  alt={heroImage.description}
+                  className="mx-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full lg:order-last lg:aspect-square"
+                  data-ai-hint={heroImage.imageHint}
+                />
+              )}
             </div>
           </div>
         </section>

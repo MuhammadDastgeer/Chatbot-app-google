@@ -1,3 +1,10 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "landing-page-hero",
+      "description": "A placeholder image for the hero section of the landing page, showing an abstract robot.",
+      "imageUrl": "https://images.unsplash.com/photo-1659018966820-de07c94e0d01?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxyb2JvdCUyMGNoYXRib3R8ZW58MHx8fHwxNzY1MzUwODkzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "robot chatbot"
+    }
+  ]
 }
