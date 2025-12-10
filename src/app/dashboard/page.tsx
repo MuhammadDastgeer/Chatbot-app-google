@@ -104,8 +104,10 @@ export default function DashboardPage() {
                 <SidebarTrigger className="md:hidden"/>
                 <h1 className="text-xl font-semibold">New Chat</h1>
             </div>
-            <div className="md:hidden">
-              <ThemeToggle />
+            <div className="flex items-center gap-2">
+                <div className="md:hidden">
+                    <ThemeToggle />
+                </div>
             </div>
           </header>
           <main className="flex-1 flex flex-col p-4 overflow-hidden">
