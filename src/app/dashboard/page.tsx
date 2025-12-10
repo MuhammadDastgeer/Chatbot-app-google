@@ -60,12 +60,13 @@ export default function DashboardPage() {
     if (newMessage.trim() !== '' && activeChat && !isLoading) {
       const userMessage: Message = { text: newMessage, isUser: true };
       const messageToSend = newMessage;
-      
+  
+      // Add user message and a placeholder for the bot's response
       setChats(prevChats => {
         const currentChat = prevChats.find(c => c.id === activeChatId);
         if (!currentChat) return prevChats;
   
-        const updatedMessages = [...currentChat.messages, userMessage];
+        const updatedMessages = [...currentChat.messages, userMessage, { text: '', isUser: false }];
         const firstUserMessage = updatedMessages.find(m => m.isUser)?.text || 'New Chat';
         const chatTitle = firstUserMessage.substring(0, 25) + (firstUserMessage.length > 25 ? '...' : '');
         const updatedChat = { ...currentChat, messages: updatedMessages, title: currentChat.messages.length === 0 ? chatTitle : currentChat.title };
@@ -85,22 +86,36 @@ export default function DashboardPage() {
           body: JSON.stringify({ message: messageToSend }),
         });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        if (!response.body) {
+            throw new Error("No response body");
         }
 
-        const data = await response.json();
-        const botMessage: Message = { text: data.output || "Sorry, I didn't get that.", isUser: false };
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let done = false;
+        let fullResponse = "";
 
-        setChats((prevChats) => {
-            const currentChat = prevChats.find(c => c.id === activeChatId);
-            if (!currentChat) return prevChats;
+        while (!done) {
+            const { value, done: streamDone } = await reader.read();
+            done = streamDone;
+            const chunk = decoder.decode(value, { stream: !done });
+            fullResponse += chunk;
 
-            const messagesWithBot = [...currentChat.messages, botMessage];
-            const updatedCurrentChat = {...currentChat, messages: messagesWithBot };
-            return prevChats.map(c => c.id === activeChatId ? updatedCurrentChat : c);
-        });
+            setChats(prevChats => {
+                const currentChat = prevChats.find(c => c.id === activeChatId);
+                if (!currentChat) return prevChats;
 
+                const lastMessageIndex = currentChat.messages.length - 1;
+                const updatedMessages = [...currentChat.messages];
+                
+                if (lastMessageIndex >= 0 && !updatedMessages[lastMessageIndex].isUser) {
+                    updatedMessages[lastMessageIndex] = { ...updatedMessages[lastMessageIndex], text: fullResponse };
+                }
+
+                const updatedCurrentChat = {...currentChat, messages: updatedMessages };
+                return prevChats.map(c => c.id === activeChatId ? updatedCurrentChat : c);
+            });
+        }
       } catch (error) {
         console.error("Error sending message:", error);
         const errorMessage: Message = { text: "Something went wrong. Please try again.", isUser: false };
@@ -108,7 +123,13 @@ export default function DashboardPage() {
             const currentChat = prevChats.find(c => c.id === activeChatId);
             if (!currentChat) return prevChats;
 
-            const messagesWithError = [...currentChat.messages, errorMessage];
+            const lastMessageIndex = currentChat.messages.length - 1;
+            const messagesWithError = [...currentChat.messages];
+             if (lastMessageIndex >= 0 && !messagesWithError[lastMessageIndex].isUser) {
+                messagesWithError[lastMessageIndex] = errorMessage;
+            } else {
+                messagesWithError.push(errorMessage);
+            }
             const updatedCurrentChat = {...currentChat, messages: messagesWithError };
             return prevChats.map(c => c.id === activeChatId ? updatedCurrentChat : c);
         });
@@ -192,21 +213,15 @@ export default function DashboardPage() {
                     <div key={index} className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}>
                         <Card className={`max-w-xs md:max-w-md lg:max-w-2xl ${message.isUser ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
                             <CardContent className="p-3 prose dark:prose-invert">
-                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.text}</ReactMarkdown>
+                                {message.text || isLoading ? (
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.text}</ReactMarkdown>
+                                ) : (
+                                   <Loader2 className="h-4 w-4 animate-spin" />
+                                )}
                             </CardContent>
                         </Card>
                     </div>
                 ))}
-                {isLoading && (
-                    <div className="flex justify-start">
-                         <Card className="max-w-xs md:max-w-md lg:max-w-2xl bg-muted">
-                            <CardContent className="p-3 flex items-center gap-2">
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                                <span>Thinking...</span>
-                            </CardContent>
-                        </Card>
-                    </div>
-                )}
                 {(!activeChat || activeChat.messages.length === 0) && !isLoading && (
                     <div className="flex h-full items-center justify-center">
                         <Card className="w-full max-w-lg text-center">
