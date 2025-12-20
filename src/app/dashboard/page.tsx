@@ -180,11 +180,11 @@ export default function DashboardPage() {
               })
             );
           } else if (isAudioResponse) {
-            const audioBlob = await response.blob();
-            const audioUrl = URL.createObjectURL(audioBlob);
-            const botMessage: Message = { text: '', isUser: false, audioUrl: audioUrl };
+             const audioBlob = await response.blob();
+             const audioUrl = URL.createObjectURL(audioBlob);
+             const botMessage: Message = { text: '', isUser: false, audioUrl: audioUrl };
 
-            setChats(prevChats =>
+             setChats(prevChats =>
               prevChats.map(c => {
                 if (c.id === activeChatId) {
                   const newMessages = [...c.messages];
