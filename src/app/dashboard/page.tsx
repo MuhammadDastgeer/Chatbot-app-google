@@ -430,37 +430,37 @@ export default function DashboardPage() {
 
   const handleSendVoiceMessage = async () => {
     if (newMessage.trim() === '' || !activeChat || isLoading) return;
-
+  
     setIsLoading(true);
     const userMessage: Message = { text: `Generate audio for: ${newMessage}`, isUser: true };
     const textToSend = newMessage;
-
+  
     setChats(prevChats =>
       prevChats.map(c =>
         c.id === activeChatId
           ? {
               ...c,
               messages: [...c.messages, userMessage, { text: '', isUser: false }],
-              title: c.messages.length === 0 ? 'Voice Note' : c.title
+              title: c.messages.length === 0 ? 'Voice Note' : c.title,
             }
           : c
       )
     );
-
+  
     setNewMessage('');
-
+  
     try {
       const response = await fetch('https://ayvzjvz0.rpcld.net/webhook-test/Generate_audio', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: textToSend }),
       });
-
+  
       if (response.ok) {
         const audioBlob = await response.blob();
         const audioUrl = URL.createObjectURL(audioBlob);
         const botMessage: Message = { text: '', isUser: false, audioUrl: audioUrl };
-
+  
         setChats(prevChats =>
           prevChats.map(c => {
             if (c.id === activeChatId) {
@@ -742,3 +742,5 @@ export default function DashboardPage() {
     </SidebarProvider>
   );
 }
+
+    
