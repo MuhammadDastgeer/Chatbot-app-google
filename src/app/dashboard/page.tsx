@@ -122,7 +122,7 @@ export default function DashboardPage() {
             if (response.ok) {
                 toast({
                     title: "File Analysis Complete",
-                    description: result.output || "The file has been processed.",
+                    description: result.output || "The file has been processed successfully.",
                 });
             } else {
                  toast({
@@ -331,7 +331,7 @@ export default function DashboardPage() {
         
         let botMessage: Message;
         if (response.ok) {
-           botMessage = { text: result.output || "The image has been processed.", isUser: false };
+           botMessage = { text: result.output || "I was unable to process the image.", isUser: false };
         } else {
            botMessage = { text: result.message || "Could not process the image.", isUser: false };
         }
