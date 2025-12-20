@@ -292,13 +292,52 @@ export default function DashboardPage() {
     setImageForAnalysis(null);
   };
 
-  const handleImageAction = () => {
-    // Logic for handling image analysis or generation
-    console.log('Image mode:', imageMode);
-    console.log('Prompt:', imagePrompt);
-    console.log('File:', imageForAnalysis);
-    // You would typically call your AI service here
-    cancelImageMode(); // Reset UI after action
+  const handleImageAction = async () => {
+    if (isLoading) return;
+    if (imageMode === 'analyze' && imageForAnalysis) {
+      setIsLoading(true);
+      const formData = new FormData();
+      formData.append('image', imageForAnalysis);
+      if (imagePrompt.trim() !== '') {
+        formData.append('text', imagePrompt);
+      }
+
+      try {
+        const response = await fetch('https://ayvzjvz0.rpcld.net/webhook-test/image', {
+          method: 'POST',
+          body: formData,
+        });
+        const result = await response.json();
+        
+        if (response.ok) {
+          toast({
+            title: "Image Analysis Complete",
+            description: result.output || "The image has been processed.",
+          });
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Analysis Failed",
+            description: result.message || "Could not process the image.",
+          });
+        }
+      } catch (error) {
+        console.error("Error analyzing image:", error);
+        toast({
+          variant: "destructive",
+          title: "Uh oh! Something went wrong.",
+          description: "Could not analyze the image. Please try again.",
+        });
+      } finally {
+        setIsLoading(false);
+        cancelImageMode();
+      }
+    } else if (imageMode === 'generate') {
+      // Logic for image generation
+      console.log('Generating image with prompt:', imagePrompt);
+      // You would typically call your AI service here
+      cancelImageMode();
+    }
   };
 
   return (
@@ -402,6 +441,7 @@ export default function DashboardPage() {
                       className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                       value={imagePrompt}
                       onChange={(e) => setImagePrompt(e.target.value)}
+                      disabled={isLoading}
                     />
                     {imageMode === 'analyze' && (
                       <div>
@@ -409,12 +449,12 @@ export default function DashboardPage() {
                           <div className="inline-flex items-center gap-2 text-sm bg-muted p-1 rounded-md">
                             <FileIcon className="h-4 w-4" />
                             <span className="text-xs truncate max-w-20">{imageForAnalysis.name}</span>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setImageForAnalysis(null)}>
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setImageForAnalysis(null)} disabled={isLoading}>
                               <X className="h-4 w-4" />
                             </Button>
                           </div>
                         ) : (
-                          <Button variant="outline" size="sm" onClick={handleFileUploadClick}>
+                          <Button variant="outline" size="sm" onClick={handleFileUploadClick} disabled={isLoading}>
                             <Plus className="mr-2 h-4 w-4" />
                             Image
                           </Button>
@@ -427,13 +467,14 @@ export default function DashboardPage() {
                       onClick={handleImageAction}
                       disabled={isLoading || (imageMode === 'analyze' && !imageForAnalysis)}
                     >
-                      <Send className="h-4 w-4"/>
+                      {isLoading ? <Loader2 className="h-4 w-4 animate-spin"/> : <Send className="h-4 w-4"/>}
                     </Button>
                     <Button 
                       size="icon" 
                       variant="ghost"
                       className="rounded-full !h-8 !w-8 flex-shrink-0"
                       onClick={cancelImageMode}
+                      disabled={isLoading}
                     >
                       <X className="h-4 w-4"/>
                     </Button>
@@ -521,7 +562,7 @@ export default function DashboardPage() {
                             onClick={handleSendMessage}
                             disabled={(!newMessage.trim() && !selectedFile) || isLoading || !!imageMode}
                         >
-                            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send />}
+                            {isLoading && !imageMode ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send />}
                         </Button>
                      </div>
                 </div>
