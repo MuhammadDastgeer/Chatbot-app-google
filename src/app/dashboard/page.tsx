@@ -22,7 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { AiWithDastgeerLogo } from '@/components/ai-with-dastgeer-logo';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Plus, Send, MessageSquare, LogOut, Loader2, Mic, Paperclip, File as FileIcon, X, Wand2, StopCircle, Bot, Search, Puzzle, Ban } from 'lucide-react';
+import { Plus, Send, MessageSquare, LogOut, Loader2, Mic, Paperclip, File as FileIcon, X, Wand2, StopCircle, Bot, Search, Puzzle, Ban, BrainCircuit } from 'lucide-react';
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
@@ -53,6 +53,8 @@ type Chat = {
   messages: Message[];
 };
 
+type ActiveTool = 'createImage' | 'createQuiz' | 'webSearch';
+
 export default function DashboardPage() {
   const { logout } = useAuth();
   useAuth(); // To trigger the auth check effect
@@ -72,7 +74,7 @@ export default function DashboardPage() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   
-  const [isImageGenerationMode, setIsImageGenerationMode] = useState(false);
+  const [activeTool, setActiveTool] = useState<ActiveTool | null>(null);
 
 
   const activeChat = useMemo(() => {
@@ -85,48 +87,66 @@ export default function DashboardPage() {
     }
   }, [selectedFile]);
 
-  const handleToolUse = (tool: 'createImage' | 'createQuiz' | 'webSearch') => {
-    if (tool === 'createImage') {
-      setIsImageGenerationMode(true);
-    } else if (tool === 'createQuiz') {
-      // Placeholder for quiz functionality
-      toast({ title: "Coming Soon!", description: "Quiz creation will be implemented shortly." });
-    } else if (tool === 'webSearch') {
-      // Placeholder for web search functionality
-      toast({ title: "Coming Soon!", description: "Web search will be implemented shortly." });
-    }
+  const handleToolUse = (tool: ActiveTool) => {
+    setActiveTool(tool);
+    // Remove toast placeholders
   };
   
   const handleSendMessage = async () => {
-    if ((newMessage.trim() === '' && !selectedFile && !isImageGenerationMode) || !activeChat || isLoading) return;
+    if ((newMessage.trim() === '' && !selectedFile && !activeTool) || !activeChat || isLoading) return;
     
     setIsLoading(true);
 
-    if(isImageGenerationMode) {
-      const userMessage: Message = { text: `Generate an image of: ${newMessage}`, isUser: true };
-      const prompt = newMessage;
+    if(activeTool) {
+      let userMessageText = '';
+      let prompt = newMessage;
+      let endpoint = '';
+      let title = activeChat.title;
+      let isImageResponse = false;
+
+      switch(activeTool) {
+        case 'createImage':
+          userMessageText = `Generate an image of: ${prompt}`;
+          endpoint = 'https://ayvzjvz0.rpcld.net/webhook-test/Generate_image';
+          title = activeChat.messages.length === 0 ? 'Image Generation' : title;
+          isImageResponse = true;
+          break;
+        case 'createQuiz':
+          userMessageText = `Create a quiz about: ${prompt}`;
+          endpoint = 'https://ayvzjvz0.rpcld.net/webhook-test/web_quiz';
+          title = activeChat.messages.length === 0 ? 'Quiz Time' : title;
+          break;
+        case 'webSearch':
+          userMessageText = `Search the web for: ${prompt}`;
+          endpoint = 'https://ayvzjvz0.rpcld.net/webhook-test/web_quiz';
+          title = activeChat.messages.length === 0 ? 'Web Search' : title;
+          break;
+      }
+      
+      const userMessage: Message = { text: userMessageText, isUser: true };
        setChats(prevChats =>
         prevChats.map(c =>
           c.id === activeChatId
             ? { 
                 ...c, 
                 messages: [...c.messages, userMessage, { text: '', isUser: false }],
-                title: c.messages.length === 0 ? 'Image Generation' : c.title
+                title: title
               }
             : c
         )
       );
       setNewMessage('');
-      setIsImageGenerationMode(false);
+      setActiveTool(null);
 
       try {
-        const response = await fetch('https://ayvzjvz0.rpcld.net/webhook-test/Generate_image', {
+        const response = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt: prompt }),
         });
 
         if(response.ok) {
+          if (isImageResponse) {
             const imageBlob = await response.blob();
             const imageUrl = URL.createObjectURL(imageBlob);
             const botMessage: Message = { text: '', isUser: false, imageUrl: imageUrl };
@@ -141,9 +161,24 @@ export default function DashboardPage() {
                 return c;
               })
             );
+          } else {
+             const result = await response.json();
+             const botMessage: Message = { text: result.output || 'I could not find anything for that.', isUser: false };
+             setChats(prevChats =>
+              prevChats.map(c => {
+                if (c.id === activeChatId) {
+                  const newMessages = [...c.messages];
+                  newMessages[newMessages.length - 1] = botMessage;
+                  return { ...c, messages: newMessages };
+                }
+                return c;
+              })
+            );
+          }
+            
         } else {
             const errorResult = await response.json().catch(() => ({}));
-             const errorMessage: Message = { text: `Image generation failed: ${errorResult.message || 'Unknown error'}`, isUser: false };
+            const errorMessage: Message = { text: `Request failed: ${errorResult.message || 'Unknown error'}`, isUser: false };
             setChats(prevChats =>
               prevChats.map(c => {
                   if (c.id === activeChatId) {
@@ -156,8 +191,8 @@ export default function DashboardPage() {
             );
         }
       } catch (error) {
-        console.error("Error generating image:", error);
-         const errorMessage: Message = { text: "Something went wrong while generating the image. Please try again.", isUser: false };
+        console.error("Error with tool:", error);
+         const errorMessage: Message = { text: "Something went wrong with the tool. Please try again.", isUser: false };
           setChats(prevChats =>
             prevChats.map(c => {
                 if (c.id === activeChatId) {
@@ -486,6 +521,45 @@ export default function DashboardPage() {
     }
   };
 
+  const getPlaceholderText = () => {
+    switch (activeTool) {
+      case 'createImage':
+        return 'Describe your image';
+      case 'createQuiz':
+        return 'Enter a topic for the quiz...';
+      case 'webSearch':
+        return 'What do you want to search for?';
+      default:
+        return 'Ask anything...';
+    }
+  };
+  
+  const getToolIcon = (tool: ActiveTool) => {
+    switch (tool) {
+      case 'createImage':
+        return '🍌'; // Using emoji for simplicity
+      case 'createQuiz':
+        return <Puzzle className="h-4 w-4" />;
+      case 'webSearch':
+        return <Search className="h-4 w-4" />;
+      default:
+        return null;
+    }
+  };
+
+  const getToolLabel = (tool: ActiveTool) => {
+    switch (tool) {
+        case 'createImage':
+            return 'Image';
+        case 'createQuiz':
+            return 'Quiz';
+        case 'webSearch':
+            return 'Search';
+        default:
+            return '';
+    }
+  };
+
   return (
     <SidebarProvider>
       <Sidebar>
@@ -612,10 +686,10 @@ export default function DashboardPage() {
                 )}
                 <div className={cn("relative")}>
                     <Input
-                      placeholder={isImageGenerationMode ? "Describe your image" : "Ask anything..."}
+                      placeholder={getPlaceholderText()}
                       className={cn(
                         "h-14 rounded-full text-base bg-muted border-none pr-24 text-center",
-                        isImageGenerationMode ? "pl-32" : "pl-32"
+                        activeTool ? "pl-32" : "pl-32"
                       )}
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
@@ -633,7 +707,7 @@ export default function DashboardPage() {
                             variant="ghost"
                             className="rounded-full !h-10 !w-10"
                             onClick={handleFileUploadClick}
-                            disabled={isLoading || isRecording || isImageGenerationMode}
+                            disabled={isLoading || isRecording || !!activeTool}
                         >
                             <Plus />
                         </Button>
@@ -642,7 +716,7 @@ export default function DashboardPage() {
                               <Button 
                                   variant="ghost"
                                   className="rounded-full !h-10 px-4"
-                                  disabled={isLoading || isRecording || isImageGenerationMode}
+                                  disabled={isLoading || isRecording || !!activeTool}
                               >
                                   <Bot />
                                   <span>Tools</span>
@@ -664,15 +738,15 @@ export default function DashboardPage() {
                           </DropdownMenuContent>
                         </DropdownMenu>
 
-                        {isImageGenerationMode && (
+                        {activeTool && (
                           <div className="inline-flex items-center gap-2 bg-background border rounded-full px-3 py-1 text-sm">
-                            <span>🍌</span>
-                            <span>Image</span>
+                            <span className="flex items-center">{getToolIcon(activeTool)}</span>
+                            <span>{getToolLabel(activeTool)}</span>
                             <Button
                               variant="ghost"
                               size="icon"
                               className="!h-5 !w-5 rounded-full"
-                              onClick={() => setIsImageGenerationMode(false)}
+                              onClick={() => setActiveTool(null)}
                             >
                               <X className="h-3 w-3" />
                             </Button>
@@ -687,7 +761,7 @@ export default function DashboardPage() {
                             variant={isRecording ? "destructive" : "ghost"}
                             className="rounded-full !h-10 !w-10"
                             onClick={handleVoiceButtonClick}
-                            disabled={isLoading || isImageGenerationMode}
+                            disabled={isLoading || !!activeTool}
                         >
                             {isRecording ? <StopCircle /> : <Mic />}
                         </Button>
@@ -695,7 +769,7 @@ export default function DashboardPage() {
                             size="icon" 
                             className="rounded-full !h-10 !w-10"
                             onClick={() => handleSendMessage()}
-                            disabled={(!newMessage.trim() && !selectedFile && !isImageGenerationMode) || isLoading || isRecording}
+                            disabled={(!newMessage.trim() && !selectedFile && !activeTool) || isLoading || isRecording}
                         >
                             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send />}
                         </Button>
