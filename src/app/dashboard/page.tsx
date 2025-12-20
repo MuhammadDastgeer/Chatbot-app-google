@@ -610,7 +610,7 @@ export default function DashboardPage() {
                 <div className={cn("relative")}>
                     <Input
                       placeholder="Ask anything..."
-                      className="pl-12 pr-24 h-14 rounded-full text-base bg-muted border-none"
+                      className="pl-32 pr-24 h-14 rounded-full text-base bg-muted border-none"
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       onKeyDown={(e) => {
@@ -629,17 +629,17 @@ export default function DashboardPage() {
                             onClick={handleFileUploadClick}
                             disabled={isLoading || isRecording}
                         >
-                            <Paperclip />
+                            <Plus />
                         </Button>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                               <Button 
-                                  size="icon" 
                                   variant="ghost"
-                                  className="rounded-full !h-10 !w-10"
+                                  className="rounded-full !h-10 px-4"
                                   disabled={isLoading || isRecording}
                               >
                                   <Bot />
+                                  <span>Tools</span>
                               </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent>
