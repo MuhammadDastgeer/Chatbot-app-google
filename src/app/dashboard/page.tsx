@@ -31,12 +31,14 @@ import remarkGfm from 'remark-gfm';
 import { useToast } from "@/hooks/use-toast";
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 
 type Message = {
   text: string;
   isUser: boolean;
   file?: File;
+  imageUrl?: string;
 };
 
 type Chat = {
@@ -293,14 +295,32 @@ export default function DashboardPage() {
   };
 
   const handleImageAction = async () => {
-    if (isLoading) return;
+    if (isLoading || !activeChat) return;
+
     if (imageMode === 'analyze' && imageForAnalysis) {
       setIsLoading(true);
+      const imageUrl = URL.createObjectURL(imageForAnalysis);
+      const userMessage: Message = { text: imagePrompt, isUser: true, imageUrl: imageUrl };
+
+      setChats(prevChats =>
+        prevChats.map(c =>
+          c.id === activeChatId
+            ? { 
+                ...c, 
+                messages: [...c.messages, userMessage, { text: '', isUser: false }],
+                title: c.messages.length === 0 ? (imagePrompt.substring(0, 20) || 'Image Analysis') : c.title
+              }
+            : c
+        )
+      );
+
       const formData = new FormData();
       formData.append('image', imageForAnalysis);
       if (imagePrompt.trim() !== '') {
         formData.append('text', imagePrompt);
       }
+      
+      cancelImageMode();
 
       try {
         const response = await fetch('https://ayvzjvz0.rpcld.net/webhook-test/image', {
@@ -309,28 +329,38 @@ export default function DashboardPage() {
         });
         const result = await response.json();
         
+        let botMessage: Message;
         if (response.ok) {
-          toast({
-            title: "Image Analysis Complete",
-            description: result.output || "The image has been processed.",
-          });
+           botMessage = { text: result.output || "The image has been processed.", isUser: false };
         } else {
-          toast({
-            variant: "destructive",
-            title: "Analysis Failed",
-            description: result.message || "Could not process the image.",
-          });
+           botMessage = { text: result.message || "Could not process the image.", isUser: false };
         }
+
+        setChats(prevChats =>
+            prevChats.map(c => {
+                if (c.id === activeChatId) {
+                    const newMessages = [...c.messages];
+                    newMessages[newMessages.length - 1] = botMessage;
+                    return { ...c, messages: newMessages };
+                }
+                return c;
+            })
+        );
       } catch (error) {
         console.error("Error analyzing image:", error);
-        toast({
-          variant: "destructive",
-          title: "Uh oh! Something went wrong.",
-          description: "Could not analyze the image. Please try again.",
-        });
+        const errorMessage: Message = { text: "Could not analyze the image. Please try again.", isUser: false };
+        setChats(prevChats =>
+            prevChats.map(c => {
+                if (c.id === activeChatId) {
+                    const newMessages = [...c.messages];
+                    newMessages[newMessages.length - 1] = errorMessage;
+                    return { ...c, messages: newMessages };
+                }
+                return c;
+            })
+        );
       } finally {
         setIsLoading(false);
-        cancelImageMode();
       }
     } else if (imageMode === 'generate') {
       // Logic for image generation
@@ -397,6 +427,17 @@ export default function DashboardPage() {
                                    <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
                                   <>
+                                    {message.imageUrl && (
+                                       <div className="mb-2">
+                                          <Image
+                                              src={message.imageUrl}
+                                              alt="Uploaded image"
+                                              width={300}
+                                              height={200}
+                                              className="rounded-md object-cover"
+                                            />
+                                       </div>
+                                    )}
                                     {message.file && (
                                       <div className="mb-2">
                                           <div className="inline-flex items-center gap-3 bg-card border rounded-lg p-2 text-card-foreground">
