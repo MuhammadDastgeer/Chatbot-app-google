@@ -67,7 +67,7 @@ body {
     @apply rounded bg-muted px-1.5 py-1 font-mono text-sm;
   }
   .prose pre {
-    @apply rounded-md bg-muted p-4 font-mono text-sm;
+    @apply rounded-md bg-muted/50 p-4 font-mono text-sm text-foreground;
     overflow-x: auto;
   }
   .prose pre code {
@@ -76,10 +76,10 @@ body {
   .prose p {
     margin: 0;
   }
-  .dark .prose {
-    @apply text-foreground;
-  }
   .dark .prose code {
-    @apply text-foreground;
+    @apply bg-muted/80 text-foreground;
+  }
+  .dark .prose pre {
+    @apply bg-muted/40 text-foreground;
   }
 }

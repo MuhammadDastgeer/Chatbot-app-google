@@ -22,12 +22,13 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { AiWithDastgeerLogo } from '@/components/ai-with-dastgeer-logo';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Plus, Send, MessageSquare, LogOut, Loader2, Mic, Paperclip } from 'lucide-react';
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { Plus, Send, MessageSquare, LogOut, Loader2, Mic, Paperclip, File as FileIcon, X } from 'lucide-react';
+import { useState, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { useToast } from "@/hooks/use-toast";
 
 type Message = {
   text: string;
@@ -43,6 +44,7 @@ type Chat = {
 export default function DashboardPage() {
   const { logout } = useAuth();
   useAuth(); // To trigger the auth check effect
+  const { toast } = useToast();
 
   const [chats, setChats] = useState<Chat[]>([
     { id: `chat-${Date.now()}`, title: 'New Chat', messages: [] },
@@ -52,6 +54,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
 
   const activeChat = useMemo(() => {
@@ -59,8 +62,53 @@ export default function DashboardPage() {
   }, [chats, activeChatId]);
 
   const handleSendMessage = async () => {
-    if (newMessage.trim() === '' || !activeChat || isLoading) return;
-  
+    if ((newMessage.trim() === '' && !selectedFile) || !activeChat || isLoading) return;
+
+    setIsLoading(true);
+
+    if (selectedFile) {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        if (newMessage.trim() !== '') {
+            formData.append('message', newMessage);
+        }
+
+        try {
+            const response = await fetch('https://ayvzjvz0.rpcld.net/webhook-test/Chatbot', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                toast({
+                    title: "File Analysis Complete",
+                    description: result.output || "The file has been processed.",
+                });
+            } else {
+                 toast({
+                    variant: "destructive",
+                    title: "Upload Failed",
+                    description: result.message || "Could not process the file.",
+                });
+            }
+        } catch (error) {
+            console.error("Error uploading file:", error);
+            toast({
+                variant: "destructive",
+                title: "Uh oh! Something went wrong.",
+                description: "Could not upload the file. Please try again.",
+            });
+        } finally {
+            setSelectedFile(null);
+            setNewMessage('');
+            setIsLoading(false);
+        }
+        return;
+    }
+
+    // Regular text message logic
     const userMessage: Message = { text: newMessage, isUser: true };
     const messageToSend = newMessage;
   
@@ -68,7 +116,6 @@ export default function DashboardPage() {
     const firstUserMessage = updatedMessages.find(m => m.isUser)?.text || 'New Chat';
     const chatTitle = firstUserMessage.substring(0, 25) + (firstUserMessage.length > 25 ? '...' : '');
   
-    // Add user message and an empty bot message
     setChats(prevChats =>
       prevChats.map(c =>
         c.id === activeChatId
@@ -82,7 +129,6 @@ export default function DashboardPage() {
     );
   
     setNewMessage('');
-    setIsLoading(true);
   
     try {
       const response = await fetch('https://ayvzjvz0.rpcld.net/webhook-test/Chatbot', {
@@ -123,8 +169,6 @@ export default function DashboardPage() {
               })
             );
         } catch (e) {
-            // In case of incomplete JSON, we just update with what we have.
-            // This might show partial JSON but will be corrected on the next chunk.
             setChats(prevChats =>
               prevChats.map(c => {
                 if (c.id === activeChatId) {
@@ -148,7 +192,6 @@ export default function DashboardPage() {
         prevChats.map(c => {
             if (c.id === activeChatId) {
                 const newMessages = [...c.messages];
-                // Replace the empty bot message with the error message
                 newMessages[newMessages.length - 1] = errorMessage;
                 return { ...c, messages: newMessages };
             }
@@ -184,6 +227,19 @@ export default function DashboardPage() {
   
   const handleFileUploadClick = () => {
     fileInputRef.current?.click();
+  }
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+        setSelectedFile(event.target.files[0]);
+    }
+  };
+
+  const removeSelectedFile = () => {
+    setSelectedFile(null);
+    if(fileInputRef.current) {
+        fileInputRef.current.value = '';
+    }
   }
 
   return (
@@ -237,12 +293,14 @@ export default function DashboardPage() {
                 {activeChat && activeChat.messages.map((message, index) => (
                     <div key={index} className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}>
                         <Card className={`max-w-xs md:max-w-md lg:max-w-2xl ${message.isUser ? 'bg-primary text-primary-foreground' : 'bg-card'}`}>
-                            <CardContent className="p-3 prose dark:prose-invert prose-p:text-current prose-code:text-current">
+                            <CardContent className="p-3">
+                                <div className="prose dark:prose-invert prose-p:text-current prose-code:text-current prose-pre:bg-muted/50 prose-pre:text-current">
                                 {message.text === '' && !message.isUser ? (
                                    <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
                                     <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.text}</ReactMarkdown>
                                 )}
+                                </div>
                             </CardContent>
                         </Card>
                     </div>
@@ -259,6 +317,22 @@ export default function DashboardPage() {
                 )}
             </div>
             <div className="mt-4 border-t pt-4">
+              {selectedFile && (
+                <div className="mb-4">
+                    <div className="inline-flex items-center gap-3 bg-card border rounded-lg p-2">
+                        <div className="bg-destructive/20 text-destructive p-2 rounded-lg">
+                           <FileIcon className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium">{selectedFile.name}</p>
+                            <p className="text-xs text-muted-foreground">{selectedFile.type.split('/')[1]?.toUpperCase()}</p>
+                        </div>
+                        <Button variant="ghost" size="icon" className="!h-7 !w-7 rounded-full" onClick={removeSelectedFile}>
+                            <X className="h-4 w-4" />
+                        </Button>
+                    </div>
+                </div>
+              )}
               <div className="relative">
                 <Input
                   placeholder="Ask anything..."
@@ -282,7 +356,7 @@ export default function DashboardPage() {
                 >
                     <Paperclip />
                 </Button>
-                <input type="file" ref={fileInputRef} className="hidden" />
+                <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} />
                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
                     <Button 
                         size="icon" 
@@ -296,7 +370,7 @@ export default function DashboardPage() {
                         size="icon" 
                         className="rounded-full !h-10 !w-10"
                         onClick={handleSendMessage}
-                        disabled={!newMessage.trim() || isLoading}
+                        disabled={(!newMessage.trim() && !selectedFile) || isLoading}
                     >
                         {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send />}
                     </Button>
@@ -309,5 +383,3 @@ export default function DashboardPage() {
     </SidebarProvider>
   );
 }
-
-    
