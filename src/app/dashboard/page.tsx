@@ -61,8 +61,6 @@ export default function DashboardPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-  const [imagePrompt, setImagePrompt] = useState('');
   
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -79,10 +77,83 @@ export default function DashboardPage() {
     }
   }, [selectedFile]);
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = async (isImageGeneration: boolean = false) => {
     if ((newMessage.trim() === '' && !selectedFile) || !activeChat || isLoading) return;
     
     setIsLoading(true);
+
+    if(isImageGeneration) {
+      const userMessage: Message = { text: `Generate an image of: ${newMessage}`, isUser: true };
+      const prompt = newMessage;
+       setChats(prevChats =>
+        prevChats.map(c =>
+          c.id === activeChatId
+            ? { 
+                ...c, 
+                messages: [...c.messages, userMessage, { text: '', isUser: false }],
+                title: c.messages.length === 0 ? 'Image Generation' : c.title
+              }
+            : c
+        )
+      );
+      setNewMessage('');
+
+      try {
+        const response = await fetch('https://ayvzjvz0.rpcld.net/webhook-test/Generate_image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: prompt }),
+        });
+
+        if(response.ok) {
+            const imageBlob = await response.blob();
+            const imageUrl = URL.createObjectURL(imageBlob);
+            const botMessage: Message = { text: '', isUser: false, imageUrl: imageUrl };
+
+            setChats(prevChats =>
+              prevChats.map(c => {
+                if (c.id === activeChatId) {
+                  const newMessages = [...c.messages];
+                  newMessages[newMessages.length - 1] = botMessage;
+                  return { ...c, messages: newMessages };
+                }
+                return c;
+              })
+            );
+        } else {
+            const errorResult = await response.json().catch(() => ({}));
+             const errorMessage: Message = { text: `Image generation failed: ${errorResult.message || 'Unknown error'}`, isUser: false };
+            setChats(prevChats =>
+              prevChats.map(c => {
+                  if (c.id === activeChatId) {
+                      const newMessages = [...c.messages];
+                      newMessages[newMessages.length - 1] = errorMessage;
+                      return { ...c, messages: newMessages };
+                  }
+                  return c;
+              })
+            );
+        }
+      } catch (error) {
+        console.error("Error generating image:", error);
+         const errorMessage: Message = { text: "Something went wrong while generating the image. Please try again.", isUser: false };
+          setChats(prevChats =>
+            prevChats.map(c => {
+                if (c.id === activeChatId) {
+                    const newMessages = [...c.messages];
+                    newMessages[newMessages.length - 1] = errorMessage;
+                    return { ...c, messages: newMessages };
+                }
+                return c;
+            })
+          );
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
+
     if (selectedFile) {
         const userMessage: Message = { text: newMessage, isUser: true, file: selectedFile };
         const fileToUpload = selectedFile;
@@ -541,6 +612,15 @@ export default function DashboardPage() {
                             disabled={isLoading || isRecording}
                         >
                             <Paperclip />
+                        </Button>
+                         <Button 
+                            size="icon" 
+                            variant="ghost"
+                            className="rounded-full !h-10 !w-10"
+                            onClick={() => handleSendMessage(true)}
+                            disabled={!newMessage.trim() || isLoading || isRecording}
+                        >
+                            <Wand2 />
                         </Button>
                     </div>
 
