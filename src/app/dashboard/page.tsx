@@ -331,9 +331,9 @@ export default function DashboardPage() {
         
         let botMessage: Message;
         if (response.ok) {
-           botMessage = { text: result.output || "I was unable to process the image.", isUser: false };
+           botMessage = { text: result.output, isUser: false };
         } else {
-           botMessage = { text: result.message || "Could not process the image.", isUser: false };
+           botMessage = { text: result.message, isUser: false };
         }
 
         setChats(prevChats =>
