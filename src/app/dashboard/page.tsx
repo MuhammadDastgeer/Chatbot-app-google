@@ -362,11 +362,68 @@ export default function DashboardPage() {
       } finally {
         setIsLoading(false);
       }
-    } else if (imageMode === 'generate') {
-      // Logic for image generation
-      console.log('Generating image with prompt:', imagePrompt);
-      // You would typically call your AI service here
+    } else if (imageMode === 'generate' && imagePrompt.trim()) {
+      setIsLoading(true);
+      const userMessage: Message = { text: `Generate an image of: ${imagePrompt}`, isUser: true };
+
+      setChats(prevChats =>
+        prevChats.map(c =>
+          c.id === activeChatId
+            ? {
+                ...c,
+                messages: [...c.messages, userMessage, { text: '', isUser: false }],
+                title: c.messages.length === 0 ? (imagePrompt.substring(0, 20) || 'Image Generation') : c.title
+              }
+            : c
+        )
+      );
+
+      const promptToSend = imagePrompt;
       cancelImageMode();
+
+      try {
+        const response = await fetch('https://ayvzjvz0.rpcld.net/webhook-test/Generate_image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: promptToSend }),
+        });
+
+        if (response.ok) {
+          const imageBlob = await response.blob();
+          const imageUrl = URL.createObjectURL(imageBlob);
+          const botMessage: Message = { text: '', isUser: false, imageUrl: imageUrl };
+
+          setChats(prevChats =>
+            prevChats.map(c => {
+              if (c.id === activeChatId) {
+                const newMessages = [...c.messages];
+                newMessages[newMessages.length - 1] = botMessage;
+                return { ...c, messages: newMessages };
+              }
+              return c;
+            })
+          );
+
+        } else {
+          const result = await response.json().catch(() => ({}));
+          throw new Error(result.message || 'Failed to generate image.');
+        }
+      } catch (error) {
+        console.error("Error generating image:", error);
+        const errorMessage: Message = { text: "Could not generate the image. Please try again.", isUser: false };
+        setChats(prevChats =>
+            prevChats.map(c => {
+                if (c.id === activeChatId) {
+                    const newMessages = [...c.messages];
+                    newMessages[newMessages.length - 1] = errorMessage;
+                    return { ...c, messages: newMessages };
+                }
+                return c;
+            })
+        );
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -423,7 +480,7 @@ export default function DashboardPage() {
                         <Card className={`max-w-xs md:max-w-md lg:max-w-2xl ${message.isUser ? 'bg-primary text-primary-foreground' : 'bg-card'}`}>
                             <CardContent className="p-3">
                                 <div className="prose dark:prose-invert prose-p:text-current prose-code:text-current prose-pre:bg-muted/50 prose-pre:text-current">
-                                {message.text === '' && !message.isUser && !message.file ? (
+                                {message.text === '' && !message.isUser && !message.file && !message.imageUrl ? (
                                    <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
                                   <>
@@ -433,7 +490,7 @@ export default function DashboardPage() {
                                               src={message.imageUrl}
                                               alt="Uploaded image"
                                               width={300}
-                                              height={200}
+                                              height={300}
                                               className="rounded-md object-cover"
                                             />
                                        </div>
@@ -506,7 +563,7 @@ export default function DashboardPage() {
                       size="icon" 
                       className="rounded-full !h-8 !w-8 flex-shrink-0"
                       onClick={handleImageAction}
-                      disabled={isLoading || (imageMode === 'analyze' && !imageForAnalysis)}
+                      disabled={isLoading || (imageMode === 'analyze' && !imageForAnalysis) || (imageMode === 'generate' && !imagePrompt.trim())}
                     >
                       {isLoading ? <Loader2 className="h-4 w-4 animate-spin"/> : <Send className="h-4 w-4"/>}
                     </Button>
