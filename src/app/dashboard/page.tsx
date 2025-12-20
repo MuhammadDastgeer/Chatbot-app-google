@@ -22,7 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { AiWithDastgeerLogo } from '@/components/ai-with-dastgeer-logo';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Plus, Send, MessageSquare, LogOut, Loader2, Mic, Paperclip, File as FileIcon, X, Wand2, StopCircle, Bot, Search, Puzzle } from 'lucide-react';
+import { Plus, Send, MessageSquare, LogOut, Loader2, Mic, Paperclip, File as FileIcon, X, Wand2, StopCircle, Bot, Search, Puzzle, Ban } from 'lucide-react';
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
@@ -71,6 +71,8 @@ export default function DashboardPage() {
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  
+  const [isImageGenerationMode, setIsImageGenerationMode] = useState(false);
 
 
   const activeChat = useMemo(() => {
@@ -85,7 +87,7 @@ export default function DashboardPage() {
 
   const handleToolUse = (tool: 'createImage' | 'createQuiz' | 'webSearch') => {
     if (tool === 'createImage') {
-      handleSendMessage(true);
+      setIsImageGenerationMode(true);
     } else if (tool === 'createQuiz') {
       // Placeholder for quiz functionality
       toast({ title: "Coming Soon!", description: "Quiz creation will be implemented shortly." });
@@ -95,12 +97,12 @@ export default function DashboardPage() {
     }
   };
   
-  const handleSendMessage = async (isImageGeneration: boolean = false) => {
-    if ((newMessage.trim() === '' && !selectedFile) || !activeChat || isLoading) return;
+  const handleSendMessage = async () => {
+    if ((newMessage.trim() === '' && !selectedFile && !isImageGenerationMode) || !activeChat || isLoading) return;
     
     setIsLoading(true);
 
-    if(isImageGeneration) {
+    if(isImageGenerationMode) {
       const userMessage: Message = { text: `Generate an image of: ${newMessage}`, isUser: true };
       const prompt = newMessage;
        setChats(prevChats =>
@@ -115,6 +117,7 @@ export default function DashboardPage() {
         )
       );
       setNewMessage('');
+      setIsImageGenerationMode(false);
 
       try {
         const response = await fetch('https://ayvzjvz0.rpcld.net/webhook-test/Generate_image', {
@@ -609,8 +612,11 @@ export default function DashboardPage() {
                 )}
                 <div className={cn("relative")}>
                     <Input
-                      placeholder="Ask anything..."
-                      className="text-center pl-32 pr-24 h-14 rounded-full text-base bg-muted border-none"
+                      placeholder={isImageGenerationMode ? "Describe your image" : "Ask anything..."}
+                      className={cn(
+                        "h-14 rounded-full text-base bg-muted border-none",
+                        isImageGenerationMode ? "pl-32 pr-24 text-left" : "pl-32 pr-24 text-center"
+                      )}
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       onKeyDown={(e) => {
@@ -627,7 +633,7 @@ export default function DashboardPage() {
                             variant="ghost"
                             className="rounded-full !h-10 !w-10"
                             onClick={handleFileUploadClick}
-                            disabled={isLoading || isRecording}
+                            disabled={isLoading || isRecording || isImageGenerationMode}
                         >
                             <Plus />
                         </Button>
@@ -636,14 +642,14 @@ export default function DashboardPage() {
                               <Button 
                                   variant="ghost"
                                   className="rounded-full !h-10 px-4"
-                                  disabled={isLoading || isRecording}
+                                  disabled={isLoading || isRecording || isImageGenerationMode}
                               >
                                   <Bot />
                                   <span>Tools</span>
                               </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent>
-                              <DropdownMenuItem onSelect={() => handleToolUse('createImage')} disabled={!newMessage.trim()}>
+                              <DropdownMenuItem onSelect={() => handleToolUse('createImage')}>
                                   <Wand2 className="mr-2 h-4 w-4" />
                                   <span>Create Image</span>
                               </DropdownMenuItem>
@@ -657,6 +663,21 @@ export default function DashboardPage() {
                               </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
+
+                        {isImageGenerationMode && (
+                          <div className="inline-flex items-center gap-2 bg-background border rounded-full px-3 py-1 text-sm">
+                            <span>🍌</span>
+                            <span>Image</span>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="!h-5 !w-5 rounded-full"
+                              onClick={() => setIsImageGenerationMode(false)}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        )}
                     </div>
 
                     <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} />
@@ -666,7 +687,7 @@ export default function DashboardPage() {
                             variant={isRecording ? "destructive" : "ghost"}
                             className="rounded-full !h-10 !w-10"
                             onClick={handleVoiceButtonClick}
-                            disabled={isLoading}
+                            disabled={isLoading || isImageGenerationMode}
                         >
                             {isRecording ? <StopCircle /> : <Mic />}
                         </Button>
@@ -674,7 +695,7 @@ export default function DashboardPage() {
                             size="icon" 
                             className="rounded-full !h-10 !w-10"
                             onClick={() => handleSendMessage()}
-                            disabled={(!newMessage.trim() && !selectedFile) || isLoading || isRecording}
+                            disabled={(!newMessage.trim() && !selectedFile && !isImageGenerationMode) || isLoading || isRecording}
                         >
                             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send />}
                         </Button>
