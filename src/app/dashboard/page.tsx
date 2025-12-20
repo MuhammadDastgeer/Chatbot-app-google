@@ -79,11 +79,15 @@ export default function DashboardPage() {
     }
   }, [selectedFile]);
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = async (isVoiceMessage = false) => {
     if ((newMessage.trim() === '' && !selectedFile) || !activeChat || isLoading) return;
 
     setIsLoading(true);
 
+    if (isVoiceMessage) {
+        return handleSendVoiceMessage();
+    }
+    
     if (selectedFile) {
         const userMessage: Message = { text: newMessage, isUser: true, file: selectedFile };
         const fileToUpload = selectedFile;
@@ -719,7 +723,7 @@ export default function DashboardPage() {
                             size="icon" 
                             variant="ghost"
                             className="rounded-full !h-10 !w-10"
-                            onClick={handleSendVoiceMessage}
+                            onClick={() => handleSendMessage(true)}
                             disabled={isLoading || !!imageMode || !newMessage.trim()}
                         >
                             <Mic />
@@ -727,7 +731,7 @@ export default function DashboardPage() {
                         <Button 
                             size="icon" 
                             className="rounded-full !h-10 !w-10"
-                            onClick={handleSendMessage}
+                            onClick={() => handleSendMessage()}
                             disabled={(!newMessage.trim() && !selectedFile) || isLoading || !!imageMode}
                         >
                             {isLoading && !imageMode ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send />}
