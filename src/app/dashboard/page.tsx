@@ -30,6 +30,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useToast } from "@/hooks/use-toast";
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 
 type Message = {
@@ -393,55 +394,53 @@ export default function DashboardPage() {
                 )}
             </div>
             <div className="mt-4 border-t pt-4">
-              {imageMode ? (
-                <div className="relative rounded-lg border bg-background p-4">
-                  <Input
-                    placeholder={imageMode === 'analyze' ? 'Describe or edit an image...' : 'Enter a prompt to generate an image...'}
-                    className="pr-20"
-                    value={imagePrompt}
-                    onChange={(e) => setImagePrompt(e.target.value)}
-                  />
-                  {imageMode === 'analyze' && (
-                    <div className="mt-2">
-                      {imageForAnalysis ? (
-                        <div className="inline-flex items-center gap-2 text-sm">
-                          <FileIcon className="h-4 w-4" />
-                          <span>{imageForAnalysis.name}</span>
-                          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setImageForAnalysis(null)}>
-                            <X className="h-4 w-4" />
+              <div className="space-y-2">
+                {imageMode && (
+                  <div className="relative rounded-lg border bg-background p-2 flex gap-2 items-center">
+                    <Input
+                      placeholder={imageMode === 'analyze' ? 'Describe or edit an image...' : 'Enter a prompt to generate an image...'}
+                      className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                      value={imagePrompt}
+                      onChange={(e) => setImagePrompt(e.target.value)}
+                    />
+                    {imageMode === 'analyze' && (
+                      <div>
+                        {imageForAnalysis ? (
+                          <div className="inline-flex items-center gap-2 text-sm bg-muted p-1 rounded-md">
+                            <FileIcon className="h-4 w-4" />
+                            <span className="text-xs truncate max-w-20">{imageForAnalysis.name}</span>
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setImageForAnalysis(null)}>
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button variant="outline" size="sm" onClick={handleFileUploadClick}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Image
                           </Button>
-                        </div>
-                      ) : (
-                        <Button variant="outline" size="sm" onClick={handleFileUploadClick}>
-                          <Plus className="mr-2 h-4 w-4" />
-                          Image
-                        </Button>
-                      )}
-                    </div>
-                  )}
-                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                        )}
+                      </div>
+                    )}
                     <Button 
                       size="icon" 
-                      className="rounded-full !h-10 !w-10"
+                      className="rounded-full !h-8 !w-8 flex-shrink-0"
                       onClick={handleImageAction}
                       disabled={isLoading || (imageMode === 'analyze' && !imageForAnalysis)}
                     >
-                      <Send />
+                      <Send className="h-4 w-4"/>
                     </Button>
                     <Button 
                       size="icon" 
                       variant="ghost"
-                      className="rounded-full !h-10 !w-10"
+                      className="rounded-full !h-8 !w-8 flex-shrink-0"
                       onClick={cancelImageMode}
                     >
-                      <X />
+                      <X className="h-4 w-4"/>
                     </Button>
                   </div>
-                </div>
-              ) : (
-                <>
+                )}
                 {selectedFile && (
-                    <div className="mb-4">
+                    <div className="mb-2">
                         <div className="inline-flex items-center gap-3 bg-card border rounded-lg p-2">
                             <div className="bg-destructive/20 text-destructive p-2 rounded-lg">
                                <FileIcon className="h-6 w-6" />
@@ -456,7 +455,7 @@ export default function DashboardPage() {
                         </div>
                     </div>
                 )}
-                <div className="relative">
+                <div className={cn("relative", imageMode && 'opacity-50 pointer-events-none')}>
                     <Input
                       placeholder="Ask anything..."
                       className="pl-24 pr-24 h-14 rounded-full text-base bg-muted border-none"
@@ -468,7 +467,7 @@ export default function DashboardPage() {
                           handleSendMessage();
                         }
                       }}
-                      disabled={isLoading}
+                      disabled={isLoading || !!imageMode}
                     />
                     <div className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                         <Button 
@@ -476,7 +475,7 @@ export default function DashboardPage() {
                             variant="ghost"
                             className="rounded-full !h-10 !w-10"
                             onClick={handleFileUploadClick}
-                            disabled={isLoading}
+                            disabled={isLoading || !!imageMode}
                         >
                             <Paperclip />
                         </Button>
@@ -486,7 +485,7 @@ export default function DashboardPage() {
                                     size="icon" 
                                     variant="ghost"
                                     className="rounded-full !h-10 !w-10"
-                                    disabled={isLoading}
+                                    disabled={isLoading || !!imageMode}
                                 >
                                     <Wand2 />
                                 </Button>
@@ -512,7 +511,7 @@ export default function DashboardPage() {
                             size="icon" 
                             variant="ghost"
                             className="rounded-full !h-10 !w-10"
-                            disabled={isLoading}
+                            disabled={isLoading || !!imageMode}
                         >
                             <Mic />
                         </Button>
@@ -520,14 +519,13 @@ export default function DashboardPage() {
                             size="icon" 
                             className="rounded-full !h-10 !w-10"
                             onClick={handleSendMessage}
-                            disabled={(!newMessage.trim() && !selectedFile) || isLoading}
+                            disabled={(!newMessage.trim() && !selectedFile) || isLoading || !!imageMode}
                         >
                             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send />}
                         </Button>
                      </div>
                 </div>
-                </>
-              )}
+              </div>
             </div>
           </main>
         </div>
