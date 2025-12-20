@@ -22,7 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { AiWithDastgeerLogo } from '@/components/ai-with-dastgeer-logo';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Plus, Send, MessageSquare, LogOut, Loader2, Mic, Paperclip, File as FileIcon, X, Wand2, StopCircle, Bot, Search, Puzzle, Ban, BrainCircuit } from 'lucide-react';
+import { Plus, Send, MessageSquare, LogOut, Loader2, Mic, Paperclip, File as FileIcon, X, Wand2, StopCircle, Bot, Search, Puzzle, Ban, BrainCircuit, Video } from 'lucide-react';
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
@@ -37,6 +37,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 
 type Message = {
@@ -277,9 +283,13 @@ export default function DashboardPage() {
     }
 
     // Regular text message logic
-    const userMessage: Message = { text: newMessage, isUser: true };
+    let userMessage: Message = { text: newMessage, isUser: true };
     const messageToSend = newMessage;
   
+    if (newMessage.trim() === '' && !activeChat.messages.some(m => m.isUser)) {
+        userMessage.text = "Tell me a fun fact.";
+    }
+
     const updatedMessages = [...activeChat.messages, userMessage];
     const firstUserMessage = updatedMessages.find(m => m.isUser)?.text || 'New Chat';
     const chatTitle = firstUserMessage.substring(0, 25) + (firstUserMessage.length > 25 ? '...' : '');
@@ -302,7 +312,7 @@ export default function DashboardPage() {
       const response = await fetch('https://ayvzjvz0.rpcld.net/webhook-test/Chatbot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: messageToSend }),
+        body: JSON.stringify({ message: messageToSend || "Tell me a fun fact." }),
       });
   
       if (!response.body) {
@@ -450,8 +460,10 @@ export default function DashboardPage() {
   const handleVoiceButtonClick = () => {
     if (isRecording) {
       stopRecording();
+    } else if (newMessage.trim() === '') {
+        startRecording();
     } else {
-      startRecording();
+        handleSendMessage();
     }
   };
 
@@ -629,7 +641,7 @@ export default function DashboardPage() {
                                 ) : (
                                   <>
                                     {message.audioUrl && (
-                                      <audio controls src={message.audioUrl} className="w-full" />
+                                      <audio controls src={message.audioUrl} className="w-full mb-2" />
                                     )}
                                     {message.imageUrl && (
                                        <div className="mb-2">
@@ -750,6 +762,19 @@ export default function DashboardPage() {
                                   <BrainCircuit className="mr-2 h-4 w-4" />
                                   <span>Deep Search</span>
                               </DropdownMenuItem>
+                               <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <DropdownMenuItem disabled>
+                                      <Video className="mr-2 h-4 w-4" />
+                                      <span>Create Video</span>
+                                    </DropdownMenuItem>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Coming soon!</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                           </DropdownMenuContent>
                         </DropdownMenu>
 
