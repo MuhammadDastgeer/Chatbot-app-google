@@ -33,7 +33,7 @@ export async function registerUserAction(data: unknown): Promise<RegisterUserRes
   const { username, email, password } = validatedFields.data;
 
   try {
-    const response = await fetch('http://localhost:5678/webhook/signup', {
+    const response = await fetch('https://ayvzjvz0.rpcld.net/webhook-test/signup', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -89,7 +89,7 @@ export async function verifyEmailAction(data: unknown): Promise<VerifyEmailRespo
   const { email, code } = validatedFields.data;
 
   try {
-    const response = await fetch('http://localhost:5678/webhook/verify-email', {
+    const response = await fetch('https://ayvzjvz0.rpcld.net/webhook-test/verify-email', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -152,7 +152,7 @@ export async function loginUserAction(data: unknown): Promise<LoginUserResponse>
   const { email, password } = validatedFields.data;
 
   try {
-    const response = await fetch('http://localhost:5678/webhook/login', {
+    const response = await fetch('https://ayvzjvz0.rpcld.net/webhook-test/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -219,7 +219,7 @@ export async function forgotPasswordAction(data: unknown): Promise<ForgotPasswor
   const { email } = validatedFields.data;
 
   try {
-    const response = await fetch('http://localhost:5678/webhook/forgot-password', {
+    const response = await fetch('https://ayvzjvz0.rpcld.net/webhook-test/forgot-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
@@ -260,7 +260,7 @@ export async function verifyResetCodeAction(data: unknown): Promise<VerifyResetC
   const { email, code } = validatedFields.data;
 
   try {
-    const response = await fetch('http://localhost:5678/webhook/verify-reset-code', {
+    const response = await fetch('https://ayvzjvz0.rpcld.net/webhook-test/verify-reset-code', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, code }),
@@ -310,7 +310,7 @@ export async function resetPasswordAction(data: unknown): Promise<ResetPasswordR
   const { email, code, newPassword } = validatedFields.data;
 
   try {
-    const response = await fetch('http://localhost:5678/webhook/reset-password', {
+    const response = await fetch('https://ayvzjvz0.rpcld.net/webhook-test/reset-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, code, new_password: newPassword }),
