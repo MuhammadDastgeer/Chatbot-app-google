@@ -79,7 +79,6 @@ export default function DashboardPage() {
     if ((newMessage.trim() === '' && !selectedFile) || !activeChat || isLoading) return;
 
     if (isVoiceMessage) {
-      setIsLoading(true);
       return handleSendVoiceMessage();
     }
     
@@ -354,10 +353,11 @@ export default function DashboardPage() {
   };
 
   const handleSendVoiceMessage = async () => {
-    if (newMessage.trim() === '' || !activeChat) return;
-
-    const userMessage: Message = { text: newMessage, isUser: true };
-    const textToSend = newMessage;
+    if (!activeChat || isLoading) return;
+    setIsLoading(true);
+  
+    const textToSend = newMessage.trim() === '' ? 'Hello' : newMessage;
+    const userMessage: Message = { text: textToSend, isUser: true };
   
     setChats(prevChats =>
       prevChats.map(c =>
@@ -610,8 +610,8 @@ export default function DashboardPage() {
                             size="icon" 
                             variant="ghost"
                             className="rounded-full !h-10 !w-10"
-                            onClick={() => handleSendMessage(true)}
-                            disabled={isLoading || isGeneratingImage || !newMessage.trim()}
+                            onClick={() => handleSendVoiceMessage()}
+                            disabled={isLoading || isGeneratingImage}
                         >
                             <Mic />
                         </Button>
