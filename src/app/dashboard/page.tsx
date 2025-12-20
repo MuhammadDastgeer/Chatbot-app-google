@@ -22,7 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { AiWithDastgeerLogo } from '@/components/ai-with-dastgeer-logo';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Plus, Send, MessageSquare, LogOut, Loader2, Mic, Paperclip, File as FileIcon, X, Wand2, StopCircle, Bot, Search, Puzzle, Ban, BrainCircuit, Video, AudioLines } from 'lucide-react';
+import { Plus, Send, MessageSquare, LogOut, Loader2, Mic, Paperclip, File as FileIcon, X, Wand2, StopCircle, Bot, Search, Puzzle, Ban, BrainCircuit, Video } from 'lucide-react';
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
@@ -59,7 +59,7 @@ type Chat = {
   messages: Message[];
 };
 
-type ActiveTool = 'createImage' | 'createQuiz' | 'webSearch' | 'deepSearch' | 'textToVoice';
+type ActiveTool = 'createImage' | 'createQuiz' | 'webSearch' | 'deepSearch';
 
 export default function DashboardPage() {
   const { logout } = useAuth();
@@ -132,12 +132,6 @@ export default function DashboardPage() {
           userMessageText = `Deep search for: ${prompt}`;
           endpoint = 'https://ayvzjvz0.rpcld.net/webhook-test/web_quiz';
           title = activeChat.messages.length === 0 ? 'Deep Search' : title;
-          break;
-        case 'textToVoice':
-          userMessageText = `Convert to voice: ${prompt}`;
-          endpoint = 'https://ayvzjvz0.rpcld.net/webhook-test/text_to_voice';
-          title = activeChat.messages.length === 0 ? 'Text to Voice' : title;
-          isAudioResponse = true;
           break;
       }
       
@@ -570,8 +564,6 @@ export default function DashboardPage() {
         return 'What do you want to search for?';
       case 'deepSearch':
         return 'What do you want to deep search for?';
-      case 'textToVoice':
-        return 'Enter text to convert to voice...';
       default:
         return 'Ask anything...';
     }
@@ -587,8 +579,6 @@ export default function DashboardPage() {
         return <Search className="h-4 w-4" />;
       case 'deepSearch':
         return <BrainCircuit className="h-4 w-4" />;
-      case 'textToVoice':
-        return <AudioLines className="h-4 w-4" />;
       default:
         return null;
     }
@@ -604,8 +594,6 @@ export default function DashboardPage() {
             return 'Search';
         case 'deepSearch':
             return 'Deep Search';
-        case 'textToVoice':
-            return 'Text to Voice';
         default:
             return '';
     }
@@ -789,10 +777,6 @@ export default function DashboardPage() {
                               <DropdownMenuItem onSelect={() => handleToolUse('deepSearch')}>
                                   <BrainCircuit className="mr-2 h-4 w-4" />
                                   <span>Deep Search</span>
-                              </DropdownMenuItem>
-                               <DropdownMenuItem onSelect={() => handleToolUse('textToVoice')}>
-                                  <AudioLines className="mr-2 h-4 w-4" />
-                                  <span>Text to Voice</span>
                               </DropdownMenuItem>
                                <TooltipProvider>
                                 <Tooltip>
