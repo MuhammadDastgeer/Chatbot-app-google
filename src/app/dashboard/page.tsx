@@ -22,7 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { AiWithDastgeerLogo } from '@/components/ai-with-dastgeer-logo';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Plus, Send, MessageSquare, LogOut, Loader2, Mic, Paperclip, File as FileIcon, X, Wand2 } from 'lucide-react';
+import { Plus, Send, MessageSquare, LogOut, Loader2, Mic, Paperclip, File as FileIcon, X, Wand2, StopCircle } from 'lucide-react';
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
@@ -63,6 +63,10 @@ export default function DashboardPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [imagePrompt, setImagePrompt] = useState('');
+  
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
 
   const activeChat = useMemo(() => {
@@ -75,12 +79,8 @@ export default function DashboardPage() {
     }
   }, [selectedFile]);
 
-  const handleSendMessage = async (isVoiceMessage = false) => {
+  const handleSendMessage = async () => {
     if ((newMessage.trim() === '' && !selectedFile) || !activeChat || isLoading) return;
-
-    if (isVoiceMessage) {
-      return handleSendVoiceMessage();
-    }
     
     setIsLoading(true);
     if (selectedFile) {
@@ -352,34 +352,81 @@ export default function DashboardPage() {
     }
   };
 
-  const handleSendVoiceMessage = async () => {
-    if (!activeChat || isLoading) return;
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        audioChunksRef.current.push(event.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        handleSendRecordedVoice(audioBlob);
+        stream.getTracks().forEach(track => track.stop()); // Stop microphone access
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error("Error accessing microphone:", error);
+      toast({
+        variant: "destructive",
+        title: "Microphone Error",
+        description: "Could not access the microphone. Please check permissions.",
+      });
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const handleVoiceButtonClick = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  };
+
+  const handleSendRecordedVoice = async (audioBlob: Blob) => {
+    if (!activeChat) return;
     setIsLoading(true);
-  
-    const textToSend = newMessage.trim() === '' ? 'Hello' : newMessage;
-    const userMessage: Message = { text: textToSend, isUser: true };
-  
+
+    const userMessage: Message = {
+      text: 'Voice message',
+      isUser: true,
+      audioUrl: URL.createObjectURL(audioBlob),
+    };
+
     setChats(prevChats =>
       prevChats.map(c =>
         c.id === activeChatId
           ? {
               ...c,
               messages: [...c.messages, userMessage, { text: '', isUser: false }],
-              title: c.messages.length === 0 ? 'Voice Note' : c.title,
+              title: c.messages.length === 0 ? 'Voice Chat' : c.title,
             }
           : c
       )
     );
-  
-    setNewMessage('');
-  
+
+    const formData = new FormData();
+    formData.append('audio', audioBlob, 'voice-message.webm');
+
     try {
       const response = await fetch('https://ayvzjvz0.rpcld.net/webhook-test/Generate_audio', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: textToSend }),
+        body: formData,
       });
-  
+
       if (response.ok) {
         const audioBlob = await response.blob();
         const audioUrl = URL.createObjectURL(audioBlob);
@@ -397,11 +444,11 @@ export default function DashboardPage() {
         );
       } else {
         const result = await response.json().catch(() => ({}));
-        throw new Error(result.message || 'Failed to generate audio.');
+        throw new Error(result.message || 'Failed to process audio.');
       }
     } catch (error) {
-      console.error("Error generating audio:", error);
-      const errorMessage: Message = { text: "Could not generate the audio. Please try again.", isUser: false };
+      console.error("Error sending voice message:", error);
+      const errorMessage: Message = { text: "Could not process the voice message. Please try again.", isUser: false };
       setChats(prevChats =>
         prevChats.map(c => {
           if (c.id === activeChatId) {
@@ -581,7 +628,7 @@ export default function DashboardPage() {
                           handleSendMessage();
                         }
                       }}
-                      disabled={isLoading || isGeneratingImage}
+                      disabled={isLoading || isGeneratingImage || isRecording}
                     />
                     <div className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                         <Button 
@@ -589,7 +636,7 @@ export default function DashboardPage() {
                             variant="ghost"
                             className="rounded-full !h-10 !w-10"
                             onClick={handleFileUploadClick}
-                            disabled={isLoading || isGeneratingImage}
+                            disabled={isLoading || isGeneratingImage || isRecording}
                         >
                             <Paperclip />
                         </Button>
@@ -598,7 +645,7 @@ export default function DashboardPage() {
                             variant="ghost"
                             className="rounded-full !h-10 !w-10"
                             onClick={() => setIsGeneratingImage(true)}
-                            disabled={isLoading || isGeneratingImage}
+                            disabled={isLoading || isGeneratingImage || isRecording}
                         >
                             <Wand2 />
                         </Button>
@@ -608,18 +655,18 @@ export default function DashboardPage() {
                      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
                         <Button 
                             size="icon" 
-                            variant="ghost"
+                            variant={isRecording ? "destructive" : "ghost"}
                             className="rounded-full !h-10 !w-10"
-                            onClick={() => handleSendVoiceMessage()}
+                            onClick={handleVoiceButtonClick}
                             disabled={isLoading || isGeneratingImage}
                         >
-                            <Mic />
+                            {isRecording ? <StopCircle /> : <Mic />}
                         </Button>
                         <Button 
                             size="icon" 
                             className="rounded-full !h-10 !w-10"
                             onClick={() => handleSendMessage()}
-                            disabled={(!newMessage.trim() && !selectedFile) || isLoading || isGeneratingImage}
+                            disabled={(!newMessage.trim() && !selectedFile) || isLoading || isGeneratingImage || isRecording}
                         >
                             {isLoading && !isGeneratingImage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send />}
                         </Button>
@@ -633,3 +680,5 @@ export default function DashboardPage() {
     </SidebarProvider>
   );
 }
+
+    
