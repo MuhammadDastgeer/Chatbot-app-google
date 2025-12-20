@@ -22,7 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { AiWithDastgeerLogo } from '@/components/ai-with-dastgeer-logo';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Plus, Send, MessageSquare, LogOut, Loader2, Mic, Paperclip, File as FileIcon, X, Wand2, StopCircle } from 'lucide-react';
+import { Plus, Send, MessageSquare, LogOut, Loader2, Mic, Paperclip, File as FileIcon, X, Wand2, StopCircle, Bot, Search, Puzzle } from 'lucide-react';
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
@@ -31,6 +31,12 @@ import remarkGfm from 'remark-gfm';
 import { useToast } from "@/hooks/use-toast";
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 
 type Message = {
@@ -77,6 +83,18 @@ export default function DashboardPage() {
     }
   }, [selectedFile]);
 
+  const handleToolUse = (tool: 'createImage' | 'createQuiz' | 'webSearch') => {
+    if (tool === 'createImage') {
+      handleSendMessage(true);
+    } else if (tool === 'createQuiz') {
+      // Placeholder for quiz functionality
+      toast({ title: "Coming Soon!", description: "Quiz creation will be implemented shortly." });
+    } else if (tool === 'webSearch') {
+      // Placeholder for web search functionality
+      toast({ title: "Coming Soon!", description: "Web search will be implemented shortly." });
+    }
+  };
+  
   const handleSendMessage = async (isImageGeneration: boolean = false) => {
     if ((newMessage.trim() === '' && !selectedFile) || !activeChat || isLoading) return;
     
@@ -613,15 +631,32 @@ export default function DashboardPage() {
                         >
                             <Paperclip />
                         </Button>
-                         <Button 
-                            size="icon" 
-                            variant="ghost"
-                            className="rounded-full !h-10 !w-10"
-                            onClick={() => handleSendMessage(true)}
-                            disabled={!newMessage.trim() || isLoading || isRecording}
-                        >
-                            <Wand2 />
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                              <Button 
+                                  size="icon" 
+                                  variant="ghost"
+                                  className="rounded-full !h-10 !w-10"
+                                  disabled={isLoading || isRecording}
+                              >
+                                  <Bot />
+                              </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                              <DropdownMenuItem onSelect={() => handleToolUse('createImage')} disabled={!newMessage.trim()}>
+                                  <Wand2 className="mr-2 h-4 w-4" />
+                                  <span>Create Image</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onSelect={() => handleToolUse('createQuiz')}>
+                                  <Puzzle className="mr-2 h-4 w-4" />
+                                  <span>Create Quiz</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onSelect={() => handleToolUse('webSearch')}>
+                                  <Search className="mr-2 h-4 w-4" />
+                                  <span>Web Search</span>
+                              </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
 
                     <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} />
