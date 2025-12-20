@@ -614,8 +614,8 @@ export default function DashboardPage() {
                     <Input
                       placeholder={isImageGenerationMode ? "Describe your image" : "Ask anything..."}
                       className={cn(
-                        "h-14 rounded-full text-base bg-muted border-none",
-                        isImageGenerationMode ? "pl-32 pr-24 text-left" : "pl-32 pr-24 text-center"
+                        "h-14 rounded-full text-base bg-muted border-none pr-24 text-center",
+                        isImageGenerationMode ? "pl-32" : "pl-32"
                       )}
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
