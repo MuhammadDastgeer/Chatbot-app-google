@@ -680,7 +680,7 @@ export default function DashboardPage() {
                         )}
                     </div>
 
-                    <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} />
+                    <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept=".pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf" />
                      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
                         <Button 
                             size="icon" 
