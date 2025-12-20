@@ -53,7 +53,7 @@ type Chat = {
   messages: Message[];
 };
 
-type ActiveTool = 'createImage' | 'createQuiz' | 'webSearch';
+type ActiveTool = 'createImage' | 'createQuiz' | 'webSearch' | 'deepSearch';
 
 export default function DashboardPage() {
   const { logout } = useAuth();
@@ -120,6 +120,11 @@ export default function DashboardPage() {
           userMessageText = `Search the web for: ${prompt}`;
           endpoint = 'https://ayvzjvz0.rpcld.net/webhook-test/web_quiz';
           title = activeChat.messages.length === 0 ? 'Web Search' : title;
+          break;
+        case 'deepSearch':
+          userMessageText = `Deep search for: ${prompt}`;
+          endpoint = 'https://ayvzjvz0.rpcld.net/webhook-test/web_quiz';
+          title = activeChat.messages.length === 0 ? 'Deep Search' : title;
           break;
       }
       
@@ -529,6 +534,8 @@ export default function DashboardPage() {
         return 'Enter a topic for the quiz...';
       case 'webSearch':
         return 'What do you want to search for?';
+      case 'deepSearch':
+        return 'What do you want to deep search for?';
       default:
         return 'Ask anything...';
     }
@@ -542,6 +549,8 @@ export default function DashboardPage() {
         return <Puzzle className="h-4 w-4" />;
       case 'webSearch':
         return <Search className="h-4 w-4" />;
+      case 'deepSearch':
+        return <BrainCircuit className="h-4 w-4" />;
       default:
         return null;
     }
@@ -555,6 +564,8 @@ export default function DashboardPage() {
             return 'Quiz';
         case 'webSearch':
             return 'Search';
+        case 'deepSearch':
+            return 'Deep Search';
         default:
             return '';
     }
@@ -734,6 +745,10 @@ export default function DashboardPage() {
                               <DropdownMenuItem onSelect={() => handleToolUse('webSearch')}>
                                   <Search className="mr-2 h-4 w-4" />
                                   <span>Web Search</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onSelect={() => handleToolUse('deepSearch')}>
+                                  <BrainCircuit className="mr-2 h-4 w-4" />
+                                  <span>Deep Search</span>
                               </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
