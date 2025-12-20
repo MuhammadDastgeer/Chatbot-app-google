@@ -39,6 +39,7 @@ type Message = {
   isUser: boolean;
   file?: File;
   imageUrl?: string;
+  audioUrl?: string;
 };
 
 type Chat = {
@@ -427,6 +428,71 @@ export default function DashboardPage() {
     }
   };
 
+  const handleSendVoiceMessage = async () => {
+    if (newMessage.trim() === '' || !activeChat || isLoading) return;
+
+    setIsLoading(true);
+    const userMessage: Message = { text: `Generate audio for: ${newMessage}`, isUser: true };
+    const textToSend = newMessage;
+
+    setChats(prevChats =>
+      prevChats.map(c =>
+        c.id === activeChatId
+          ? {
+              ...c,
+              messages: [...c.messages, userMessage, { text: '', isUser: false }],
+              title: c.messages.length === 0 ? 'Voice Note' : c.title
+            }
+          : c
+      )
+    );
+
+    setNewMessage('');
+
+    try {
+      const response = await fetch('https://ayvzjvz0.rpcld.net/webhook-test/Generate_audio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: textToSend }),
+      });
+
+      if (response.ok) {
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const botMessage: Message = { text: '', isUser: false, audioUrl: audioUrl };
+
+        setChats(prevChats =>
+          prevChats.map(c => {
+            if (c.id === activeChatId) {
+              const newMessages = [...c.messages];
+              newMessages[newMessages.length - 1] = botMessage;
+              return { ...c, messages: newMessages };
+            }
+            return c;
+          })
+        );
+      } else {
+        const result = await response.json().catch(() => ({}));
+        throw new Error(result.message || 'Failed to generate audio.');
+      }
+    } catch (error) {
+      console.error("Error generating audio:", error);
+      const errorMessage: Message = { text: "Could not generate the audio. Please try again.", isUser: false };
+      setChats(prevChats =>
+        prevChats.map(c => {
+          if (c.id === activeChatId) {
+            const newMessages = [...c.messages];
+            newMessages[newMessages.length - 1] = errorMessage;
+            return { ...c, messages: newMessages };
+          }
+          return c;
+        })
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <SidebarProvider>
       <Sidebar>
@@ -480,10 +546,13 @@ export default function DashboardPage() {
                         <Card className={`max-w-xs md:max-w-md lg:max-w-2xl ${message.isUser ? 'bg-primary text-primary-foreground' : 'bg-card'}`}>
                             <CardContent className="p-3">
                                 <div className="prose dark:prose-invert prose-p:text-current prose-code:text-current prose-pre:bg-muted/50 prose-pre:text-current">
-                                {message.text === '' && !message.isUser && !message.file && !message.imageUrl ? (
+                                {message.text === '' && !message.isUser && !message.file && !message.imageUrl && !message.audioUrl ? (
                                    <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
                                   <>
+                                    {message.audioUrl && (
+                                      <audio controls src={message.audioUrl} className="w-full" />
+                                    )}
                                     {message.imageUrl && (
                                        <div className="mb-2">
                                           <Image
@@ -650,7 +719,8 @@ export default function DashboardPage() {
                             size="icon" 
                             variant="ghost"
                             className="rounded-full !h-10 !w-10"
-                            disabled={isLoading || !!imageMode}
+                            onClick={handleSendVoiceMessage}
+                            disabled={isLoading || !!imageMode || !newMessage.trim()}
                         >
                             <Mic />
                         </Button>
