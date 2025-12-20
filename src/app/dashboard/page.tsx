@@ -18,12 +18,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { AiWithDastgeerLogo } from '@/components/ai-with-dastgeer-logo';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Plus, Send, MessageSquare, LogOut, Loader2 } from 'lucide-react';
-import { useState, useMemo, useEffect } from 'react';
+import { Plus, Send, MessageSquare, LogOut, Loader2, Mic, Paperclip } from 'lucide-react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import ReactMarkdown from 'react-markdown';
@@ -51,6 +51,8 @@ export default function DashboardPage() {
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
 
   const activeChat = useMemo(() => {
     return chats.find((c) => c.id === activeChatId);
@@ -83,7 +85,7 @@ export default function DashboardPage() {
     setIsLoading(true);
   
     try {
-      const response = await fetch('https://o4tdkmt2.rpcl.app/webhook/Chatbot', {
+      const response = await fetch('https://ayvzjvz0.rpcld.net/webhook-test/Chatbot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: messageToSend }),
@@ -179,6 +181,10 @@ export default function DashboardPage() {
   const switchChat = (chatId: string) => {
     setActiveChatId(chatId);
   };
+  
+  const handleFileUploadClick = () => {
+    fileInputRef.current?.click();
+  }
 
   return (
     <SidebarProvider>
@@ -253,29 +259,49 @@ export default function DashboardPage() {
                 )}
             </div>
             <div className="mt-4 border-t pt-4">
-                <div className="relative">
-                    <Textarea
-                        placeholder="Message AI WITH DASTGEER..."
-                        className="pr-16 resize-none bg-muted border-none"
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter' && !e.shiftKey) {
-                                e.preventDefault();
-                                handleSendMessage();
-                            }
-                        }}
-                        disabled={isLoading}
-                    />
+              <div className="relative">
+                <Input
+                  placeholder="Ask anything..."
+                  className="pl-12 pr-24 h-14 rounded-full text-base bg-muted border-none"
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  disabled={isLoading}
+                />
+                <Button 
+                    size="icon" 
+                    variant="ghost"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full !h-10 !w-10"
+                    onClick={handleFileUploadClick}
+                    disabled={isLoading}
+                >
+                    <Paperclip />
+                </Button>
+                <input type="file" ref={fileInputRef} className="hidden" />
+                 <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
                     <Button 
                         size="icon" 
-                        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full !h-10 !w-10"
+                        variant="ghost"
+                        className="rounded-full !h-10 !w-10"
+                        disabled={isLoading}
+                    >
+                        <Mic />
+                    </Button>
+                    <Button 
+                        size="icon" 
+                        className="rounded-full !h-10 !w-10"
                         onClick={handleSendMessage}
                         disabled={!newMessage.trim() || isLoading}
                     >
                         {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send />}
                     </Button>
-                </div>
+                 </div>
+              </div>
             </div>
           </main>
         </div>
