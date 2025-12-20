@@ -22,7 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { AiWithDastgeerLogo } from '@/components/ai-with-dastgeer-logo';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Plus, Send, MessageSquare, LogOut, Loader2, Mic, Paperclip, File as FileIcon, X, Wand2, ImageIcon } from 'lucide-react';
+import { Plus, Send, MessageSquare, LogOut, Loader2, Mic, Paperclip, File as FileIcon, X, Wand2 } from 'lucide-react';
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
@@ -78,12 +78,12 @@ export default function DashboardPage() {
   const handleSendMessage = async (isVoiceMessage = false) => {
     if ((newMessage.trim() === '' && !selectedFile) || !activeChat || isLoading) return;
 
-    setIsLoading(true);
-
     if (isVoiceMessage) {
-        return handleSendVoiceMessage();
+      setIsLoading(true);
+      return handleSendVoiceMessage();
     }
     
+    setIsLoading(true);
     if (selectedFile) {
         const userMessage: Message = { text: newMessage, isUser: true, file: selectedFile };
         const fileToUpload = selectedFile;
@@ -354,9 +354,8 @@ export default function DashboardPage() {
   };
 
   const handleSendVoiceMessage = async () => {
-    if (newMessage.trim() === '' || !activeChat || isLoading) return;
-  
-    setIsLoading(true);
+    if (newMessage.trim() === '' || !activeChat) return;
+
     const userMessage: Message = { text: newMessage, isUser: true };
     const textToSend = newMessage;
   
@@ -482,7 +481,7 @@ export default function DashboardPage() {
                                        <div className="mb-2">
                                           <Image
                                               src={message.imageUrl}
-                                              alt="Uploaded image"
+                                              alt="Generated image"
                                               width={300}
                                               height={300}
                                               className="rounded-md object-cover"
