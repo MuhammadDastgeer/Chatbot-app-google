@@ -432,7 +432,7 @@ export default function DashboardPage() {
     if (newMessage.trim() === '' || !activeChat || isLoading) return;
   
     setIsLoading(true);
-    const userMessage: Message = { text: `Generate audio for: ${newMessage}`, isUser: true };
+    const userMessage: Message = { text: newMessage, isUser: true };
     const textToSend = newMessage;
   
     setChats(prevChats =>
@@ -742,5 +742,3 @@ export default function DashboardPage() {
     </SidebarProvider>
   );
 }
-
-    
