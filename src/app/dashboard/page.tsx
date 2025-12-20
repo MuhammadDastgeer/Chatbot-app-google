@@ -22,14 +22,13 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { AiWithDastgeerLogo } from '@/components/ai-with-dastgeer-logo';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Plus, Send, MessageSquare, LogOut, Loader2, Mic, Paperclip, File as FileIcon, X, Wand2, ImageIcon, ScanSearch } from 'lucide-react';
+import { Plus, Send, MessageSquare, LogOut, Loader2, Mic, Paperclip, File as FileIcon, X, Wand2, ImageIcon } from 'lucide-react';
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useToast } from "@/hooks/use-toast";
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
@@ -48,8 +47,6 @@ type Chat = {
   messages: Message[];
 };
 
-type ImageMode = 'analyze' | 'generate' | null;
-
 export default function DashboardPage() {
   const { logout } = useAuth();
   useAuth(); // To trigger the auth check effect
@@ -64,9 +61,8 @@ export default function DashboardPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [imageMode, setImageMode] = useState<ImageMode>(null);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [imagePrompt, setImagePrompt] = useState('');
-  const [imageForAnalysis, setImageForAnalysis] = useState<File | null>(null);
 
 
   const activeChat = useMemo(() => {
@@ -74,7 +70,7 @@ export default function DashboardPage() {
   }, [chats, activeChatId]);
 
   useEffect(() => {
-    if (selectedFile && activeChat && !imageMode) {
+    if (selectedFile && activeChat) {
       handleSendMessage();
     }
   }, [selectedFile]);
@@ -273,11 +269,7 @@ export default function DashboardPage() {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
         const file = event.target.files[0];
-        if (imageMode === 'analyze') {
-            setImageForAnalysis(file);
-        } else {
-            setSelectedFile(file);
-        }
+        setSelectedFile(file);
     }
   };
 
@@ -288,86 +280,15 @@ export default function DashboardPage() {
     }
   }
 
-  const handleImageModeSelect = (mode: ImageMode) => {
-    setImageMode(mode);
-    // Close popover
-  };
-
   const cancelImageMode = () => {
-    setImageMode(null);
+    setIsGeneratingImage(false);
     setImagePrompt('');
-    setImageForAnalysis(null);
   };
 
   const handleImageAction = async () => {
     if (isLoading || !activeChat) return;
 
-    if (imageMode === 'analyze' && imageForAnalysis) {
-      setIsLoading(true);
-      const imageUrl = URL.createObjectURL(imageForAnalysis);
-      const userMessage: Message = { text: imagePrompt, isUser: true, imageUrl: imageUrl };
-
-      setChats(prevChats =>
-        prevChats.map(c =>
-          c.id === activeChatId
-            ? { 
-                ...c, 
-                messages: [...c.messages, userMessage, { text: '', isUser: false }],
-                title: c.messages.length === 0 ? (imagePrompt.substring(0, 20) || 'Image Analysis') : c.title
-              }
-            : c
-        )
-      );
-
-      const formData = new FormData();
-      formData.append('image', imageForAnalysis);
-      if (imagePrompt.trim() !== '') {
-        formData.append('text', imagePrompt);
-      }
-      
-      cancelImageMode();
-
-      try {
-        const response = await fetch('https://ayvzjvz0.rpcld.net/webhook-test/image', {
-          method: 'POST',
-          body: formData,
-        });
-        const result = await response.json();
-        
-        let botMessage: Message;
-        if (response.ok && Array.isArray(result) && result.length > 0 && result[0].text) {
-           botMessage = { text: result[0].text, isUser: false };
-        } else {
-           botMessage = { text: result.message || "Could not analyze the image.", isUser: false };
-        }
-
-        setChats(prevChats =>
-            prevChats.map(c => {
-                if (c.id === activeChatId) {
-                    const newMessages = [...c.messages];
-                    newMessages[newMessages.length - 1] = botMessage;
-                    return { ...c, messages: newMessages };
-                }
-                return c;
-            })
-        );
-      } catch (error) {
-        console.error("Error analyzing image:", error);
-        const errorMessage: Message = { text: "Could not analyze the image. Please try again.", isUser: false };
-        setChats(prevChats =>
-            prevChats.map(c => {
-                if (c.id === activeChatId) {
-                    const newMessages = [...c.messages];
-                    newMessages[newMessages.length - 1] = errorMessage;
-                    return { ...c, messages: newMessages };
-                }
-                return c;
-            })
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    } else if (imageMode === 'generate' && imagePrompt.trim()) {
+    if (isGeneratingImage && imagePrompt.trim()) {
       setIsLoading(true);
       const userMessage: Message = { text: `Generate an image of: ${imagePrompt}`, isUser: true };
 
@@ -605,38 +526,20 @@ export default function DashboardPage() {
             </div>
             <div className="mt-4 border-t pt-4">
               <div className="space-y-2">
-                {imageMode && (
+                {isGeneratingImage && (
                   <div className="relative rounded-lg border bg-background p-2 flex gap-2 items-center">
                     <Input
-                      placeholder={imageMode === 'analyze' ? 'Describe or edit an image...' : 'Enter a prompt to generate an image...'}
+                      placeholder={'Enter a prompt to generate an image...'}
                       className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                       value={imagePrompt}
                       onChange={(e) => setImagePrompt(e.target.value)}
                       disabled={isLoading}
                     />
-                    {imageMode === 'analyze' && (
-                      <div>
-                        {imageForAnalysis ? (
-                          <div className="inline-flex items-center gap-2 text-sm bg-muted p-1 rounded-md">
-                            <FileIcon className="h-4 w-4" />
-                            <span className="text-xs truncate max-w-20">{imageForAnalysis.name}</span>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setImageForAnalysis(null)} disabled={isLoading}>
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ) : (
-                          <Button variant="outline" size="sm" onClick={handleFileUploadClick} disabled={isLoading}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Image
-                          </Button>
-                        )}
-                      </div>
-                    )}
                     <Button 
                       size="icon" 
                       className="rounded-full !h-8 !w-8 flex-shrink-0"
                       onClick={handleImageAction}
-                      disabled={isLoading || (imageMode === 'analyze' && !imageForAnalysis) || (imageMode === 'generate' && !imagePrompt.trim())}
+                      disabled={isLoading || !imagePrompt.trim()}
                     >
                       {isLoading ? <Loader2 className="h-4 w-4 animate-spin"/> : <Send className="h-4 w-4"/>}
                     </Button>
@@ -667,7 +570,7 @@ export default function DashboardPage() {
                         </div>
                     </div>
                 )}
-                <div className={cn("relative", imageMode && 'opacity-50 pointer-events-none')}>
+                <div className={cn("relative", isGeneratingImage && 'opacity-50 pointer-events-none')}>
                     <Input
                       placeholder="Ask anything..."
                       className="pl-24 pr-24 h-14 rounded-full text-base bg-muted border-none"
@@ -679,7 +582,7 @@ export default function DashboardPage() {
                           handleSendMessage();
                         }
                       }}
-                      disabled={isLoading || !!imageMode}
+                      disabled={isLoading || isGeneratingImage}
                     />
                     <div className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                         <Button 
@@ -687,34 +590,19 @@ export default function DashboardPage() {
                             variant="ghost"
                             className="rounded-full !h-10 !w-10"
                             onClick={handleFileUploadClick}
-                            disabled={isLoading || !!imageMode}
+                            disabled={isLoading || isGeneratingImage}
                         >
                             <Paperclip />
                         </Button>
-                         <Popover>
-                            <PopoverTrigger asChild>
-                                <Button 
-                                    size="icon" 
-                                    variant="ghost"
-                                    className="rounded-full !h-10 !w-10"
-                                    disabled={isLoading || !!imageMode}
-                                >
-                                    <Wand2 />
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-2 mb-2">
-                               <div className="flex flex-col gap-2">
-                                    <Button variant="ghost" className="justify-start" onClick={() => handleImageModeSelect('analyze')}>
-                                        <ScanSearch className="mr-2" />
-                                        Analyze image
-                                    </Button>
-                                    <Button variant="ghost" className="justify-start" onClick={() => handleImageModeSelect('generate')}>
-                                        <ImageIcon className="mr-2" />
-                                        Generate an image
-                                    </Button>
-                               </div>
-                            </PopoverContent>
-                        </Popover>
+                        <Button 
+                            size="icon" 
+                            variant="ghost"
+                            className="rounded-full !h-10 !w-10"
+                            onClick={() => setIsGeneratingImage(true)}
+                            disabled={isLoading || isGeneratingImage}
+                        >
+                            <Wand2 />
+                        </Button>
                     </div>
 
                     <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} />
@@ -724,7 +612,7 @@ export default function DashboardPage() {
                             variant="ghost"
                             className="rounded-full !h-10 !w-10"
                             onClick={() => handleSendMessage(true)}
-                            disabled={isLoading || !!imageMode || !newMessage.trim()}
+                            disabled={isLoading || isGeneratingImage || !newMessage.trim()}
                         >
                             <Mic />
                         </Button>
@@ -732,9 +620,9 @@ export default function DashboardPage() {
                             size="icon" 
                             className="rounded-full !h-10 !w-10"
                             onClick={() => handleSendMessage()}
-                            disabled={(!newMessage.trim() && !selectedFile) || isLoading || !!imageMode}
+                            disabled={(!newMessage.trim() && !selectedFile) || isLoading || isGeneratingImage}
                         >
-                            {isLoading && !imageMode ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send />}
+                            {isLoading && !isGeneratingImage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send />}
                         </Button>
                      </div>
                 </div>
