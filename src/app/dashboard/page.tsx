@@ -587,7 +587,7 @@ export default function DashboardPage() {
                         </Popover>
                     </div>
 
-                    <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept="image/*" />
+                    <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} />
                      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
                         <Button 
                             size="icon" 
