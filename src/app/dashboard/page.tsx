@@ -610,7 +610,7 @@ export default function DashboardPage() {
                 <div className={cn("relative")}>
                     <Input
                       placeholder="Ask anything..."
-                      className="pl-32 pr-24 h-14 rounded-full text-base bg-muted border-none"
+                      className="text-center pl-32 pr-24 h-14 rounded-full text-base bg-muted border-none"
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       onKeyDown={(e) => {
