@@ -330,10 +330,10 @@ export default function DashboardPage() {
         const result = await response.json();
         
         let botMessage: Message;
-        if (response.ok) {
-           botMessage = { text: result.output, isUser: false };
+        if (response.ok && Array.isArray(result) && result.length > 0 && result[0].text) {
+           botMessage = { text: result[0].text, isUser: false };
         } else {
-           botMessage = { text: result.message, isUser: false };
+           botMessage = { text: result.message || "Could not analyze the image.", isUser: false };
         }
 
         setChats(prevChats =>
