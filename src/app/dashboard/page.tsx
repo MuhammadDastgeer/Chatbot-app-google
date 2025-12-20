@@ -544,7 +544,7 @@ export default function DashboardPage() {
   const getToolIcon = (tool: ActiveTool) => {
     switch (tool) {
       case 'createImage':
-        return '🍌'; // Using emoji for simplicity
+        return <Wand2 className="h-4 w-4" />;
       case 'createQuiz':
         return <Puzzle className="h-4 w-4" />;
       case 'webSearch':
