@@ -765,7 +765,7 @@ export default function DashboardPage() {
                                <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <DropdownMenuItem disabled>
+                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} disabled>
                                       <Video className="mr-2 h-4 w-4" />
                                       <span>Create Video</span>
                                     </DropdownMenuItem>
