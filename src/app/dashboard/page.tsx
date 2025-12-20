@@ -23,7 +23,7 @@ import { Button } from '@/components/ui/button';
 import { AiWithDastgeerLogo } from '@/components/ai-with-dastgeer-logo';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Plus, Send, MessageSquare, LogOut, Loader2, Mic, Paperclip, File as FileIcon, X } from 'lucide-react';
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import ReactMarkdown from 'react-markdown';
@@ -33,6 +33,7 @@ import { useToast } from "@/hooks/use-toast";
 type Message = {
   text: string;
   isUser: boolean;
+  file?: File;
 };
 
 type Chat = {
@@ -61,16 +62,43 @@ export default function DashboardPage() {
     return chats.find((c) => c.id === activeChatId);
   }, [chats, activeChatId]);
 
+  useEffect(() => {
+    if (selectedFile && activeChat) {
+      handleSendMessage();
+    }
+  }, [selectedFile]);
+
   const handleSendMessage = async () => {
     if ((newMessage.trim() === '' && !selectedFile) || !activeChat || isLoading) return;
 
     setIsLoading(true);
 
     if (selectedFile) {
+        const userMessage: Message = { text: newMessage, isUser: true, file: selectedFile };
+        const fileToUpload = selectedFile;
+        const messageToSend = newMessage;
+
+        const updatedMessages = [...activeChat.messages, userMessage];
+
+        setChats(prevChats =>
+          prevChats.map(c =>
+            c.id === activeChatId
+              ? { 
+                  ...c, 
+                  messages: updatedMessages,
+                  title: c.messages.length === 0 ? 'File Chat' : c.title
+                }
+              : c
+          )
+        );
+        
+        setNewMessage('');
+        setSelectedFile(null);
+
         const formData = new FormData();
-        formData.append('file', selectedFile);
-        if (newMessage.trim() !== '') {
-            formData.append('message', newMessage);
+        formData.append('file', fileToUpload);
+        if (messageToSend.trim() !== '') {
+            formData.append('message', messageToSend);
         }
 
         try {
@@ -101,8 +129,6 @@ export default function DashboardPage() {
                 description: "Could not upload the file. Please try again.",
             });
         } finally {
-            setSelectedFile(null);
-            setNewMessage('');
             setIsLoading(false);
         }
         return;
@@ -295,10 +321,28 @@ export default function DashboardPage() {
                         <Card className={`max-w-xs md:max-w-md lg:max-w-2xl ${message.isUser ? 'bg-primary text-primary-foreground' : 'bg-card'}`}>
                             <CardContent className="p-3">
                                 <div className="prose dark:prose-invert prose-p:text-current prose-code:text-current prose-pre:bg-muted/50 prose-pre:text-current">
-                                {message.text === '' && !message.isUser ? (
+                                {message.text === '' && !message.isUser && !message.file ? (
                                    <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
+                                  <>
+                                    {message.file && (
+                                      <div className="mb-2">
+                                          <div className="inline-flex items-center gap-3 bg-card border rounded-lg p-2 text-card-foreground">
+                                              <div className="bg-destructive/20 text-destructive p-2 rounded-lg">
+                                                 <FileIcon className="h-6 w-6" />
+                                              </div>
+                                              <div>
+                                                  <p className="text-sm font-medium">{message.file.name}</p>
+                                                  <p className="text-xs text-muted-foreground">{message.file.type.split('/')[1]?.toUpperCase()}</p>
+                                              </div>
+                                              {isLoading && message.isUser && (
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                              )}
+                                          </div>
+                                      </div>
+                                    )}
                                     <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.text}</ReactMarkdown>
+                                  </>
                                 )}
                                 </div>
                             </CardContent>
