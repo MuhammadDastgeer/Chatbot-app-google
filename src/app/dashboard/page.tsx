@@ -44,6 +44,8 @@ type Chat = {
   messages: Message[];
 };
 
+type ImageMode = 'analyze' | 'generate' | null;
+
 export default function DashboardPage() {
   const { logout } = useAuth();
   useAuth(); // To trigger the auth check effect
@@ -58,6 +60,9 @@ export default function DashboardPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imageMode, setImageMode] = useState<ImageMode>(null);
+  const [imagePrompt, setImagePrompt] = useState('');
+  const [imageForAnalysis, setImageForAnalysis] = useState<File | null>(null);
 
 
   const activeChat = useMemo(() => {
@@ -65,7 +70,7 @@ export default function DashboardPage() {
   }, [chats, activeChatId]);
 
   useEffect(() => {
-    if (selectedFile && activeChat) {
+    if (selectedFile && activeChat && !imageMode) {
       handleSendMessage();
     }
   }, [selectedFile]);
@@ -259,7 +264,12 @@ export default function DashboardPage() {
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
-        setSelectedFile(event.target.files[0]);
+        const file = event.target.files[0];
+        if (imageMode === 'analyze') {
+            setImageForAnalysis(file);
+        } else {
+            setSelectedFile(file);
+        }
     }
   };
 
@@ -269,6 +279,26 @@ export default function DashboardPage() {
         fileInputRef.current.value = '';
     }
   }
+
+  const handleImageModeSelect = (mode: ImageMode) => {
+    setImageMode(mode);
+    // Close popover
+  };
+
+  const cancelImageMode = () => {
+    setImageMode(null);
+    setImagePrompt('');
+    setImageForAnalysis(null);
+  };
+
+  const handleImageAction = () => {
+    // Logic for handling image analysis or generation
+    console.log('Image mode:', imageMode);
+    console.log('Prompt:', imagePrompt);
+    console.log('File:', imageForAnalysis);
+    // You would typically call your AI service here
+    cancelImageMode(); // Reset UI after action
+  };
 
   return (
     <SidebarProvider>
@@ -363,92 +393,141 @@ export default function DashboardPage() {
                 )}
             </div>
             <div className="mt-4 border-t pt-4">
-              {selectedFile && (
-                <div className="mb-4">
-                    <div className="inline-flex items-center gap-3 bg-card border rounded-lg p-2">
-                        <div className="bg-destructive/20 text-destructive p-2 rounded-lg">
-                           <FileIcon className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium">{selectedFile.name}</p>
-                            <p className="text-xs text-muted-foreground">{selectedFile.type.split('/')[1]?.toUpperCase()}</p>
-                        </div>
-                        <Button variant="ghost" size="icon" className="!h-7 !w-7 rounded-full" onClick={removeSelectedFile}>
+              {imageMode ? (
+                <div className="relative rounded-lg border bg-background p-4">
+                  <Input
+                    placeholder={imageMode === 'analyze' ? 'Describe or edit an image...' : 'Enter a prompt to generate an image...'}
+                    className="pr-20"
+                    value={imagePrompt}
+                    onChange={(e) => setImagePrompt(e.target.value)}
+                  />
+                  {imageMode === 'analyze' && (
+                    <div className="mt-2">
+                      {imageForAnalysis ? (
+                        <div className="inline-flex items-center gap-2 text-sm">
+                          <FileIcon className="h-4 w-4" />
+                          <span>{imageForAnalysis.name}</span>
+                          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setImageForAnalysis(null)}>
                             <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button variant="outline" size="sm" onClick={handleFileUploadClick}>
+                          <Plus className="mr-2 h-4 w-4" />
+                          Image
                         </Button>
+                      )}
                     </div>
-                </div>
-              )}
-              <div className="relative">
-                <Input
-                  placeholder="Ask anything..."
-                  className="pl-24 pr-24 h-14 rounded-full text-base bg-muted border-none"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }
-                  }}
-                  disabled={isLoading}
-                />
-                <div className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                  )}
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
                     <Button 
-                        size="icon" 
-                        variant="ghost"
-                        className="rounded-full !h-10 !w-10"
-                        onClick={handleFileUploadClick}
-                        disabled={isLoading}
+                      size="icon" 
+                      className="rounded-full !h-10 !w-10"
+                      onClick={handleImageAction}
+                      disabled={isLoading || (imageMode === 'analyze' && !imageForAnalysis)}
                     >
-                        <Paperclip />
+                      <Send />
                     </Button>
-                     <Popover>
-                        <PopoverTrigger asChild>
-                            <Button 
-                                size="icon" 
-                                variant="ghost"
-                                className="rounded-full !h-10 !w-10"
-                                disabled={isLoading}
-                            >
-                                <Wand2 />
+                    <Button 
+                      size="icon" 
+                      variant="ghost"
+                      className="rounded-full !h-10 !w-10"
+                      onClick={cancelImageMode}
+                    >
+                      <X />
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                {selectedFile && (
+                    <div className="mb-4">
+                        <div className="inline-flex items-center gap-3 bg-card border rounded-lg p-2">
+                            <div className="bg-destructive/20 text-destructive p-2 rounded-lg">
+                               <FileIcon className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium">{selectedFile.name}</p>
+                                <p className="text-xs text-muted-foreground">{selectedFile.type.split('/')[1]?.toUpperCase()}</p>
+                            </div>
+                            <Button variant="ghost" size="icon" className="!h-7 !w-7 rounded-full" onClick={removeSelectedFile}>
+                                <X className="h-4 w-4" />
                             </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-2 mb-2">
-                           <div className="flex flex-col gap-2">
-                                <Button variant="ghost" className="justify-start">
-                                    <ScanSearch className="mr-2" />
-                                    Analyze image
+                        </div>
+                    </div>
+                )}
+                <div className="relative">
+                    <Input
+                      placeholder="Ask anything..."
+                      className="pl-24 pr-24 h-14 rounded-full text-base bg-muted border-none"
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendMessage();
+                        }
+                      }}
+                      disabled={isLoading}
+                    />
+                    <div className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                        <Button 
+                            size="icon" 
+                            variant="ghost"
+                            className="rounded-full !h-10 !w-10"
+                            onClick={handleFileUploadClick}
+                            disabled={isLoading}
+                        >
+                            <Paperclip />
+                        </Button>
+                         <Popover>
+                            <PopoverTrigger asChild>
+                                <Button 
+                                    size="icon" 
+                                    variant="ghost"
+                                    className="rounded-full !h-10 !w-10"
+                                    disabled={isLoading}
+                                >
+                                    <Wand2 />
                                 </Button>
-                                <Button variant="ghost" className="justify-start">
-                                    <ImageIcon className="mr-2" />
-                                    Generate an image
-                                </Button>
-                           </div>
-                        </PopoverContent>
-                    </Popover>
-                </div>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-2 mb-2">
+                               <div className="flex flex-col gap-2">
+                                    <Button variant="ghost" className="justify-start" onClick={() => handleImageModeSelect('analyze')}>
+                                        <ScanSearch className="mr-2" />
+                                        Analyze image
+                                    </Button>
+                                    <Button variant="ghost" className="justify-start" onClick={() => handleImageModeSelect('generate')}>
+                                        <ImageIcon className="mr-2" />
+                                        Generate an image
+                                    </Button>
+                               </div>
+                            </PopoverContent>
+                        </Popover>
+                    </div>
 
-                <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} />
-                 <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                    <Button 
-                        size="icon" 
-                        variant="ghost"
-                        className="rounded-full !h-10 !w-10"
-                        disabled={isLoading}
-                    >
-                        <Mic />
-                    </Button>
-                    <Button 
-                        size="icon" 
-                        className="rounded-full !h-10 !w-10"
-                        onClick={handleSendMessage}
-                        disabled={(!newMessage.trim() && !selectedFile) || isLoading}
-                    >
-                        {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send />}
-                    </Button>
-                 </div>
-              </div>
+                    <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept="image/*" />
+                     <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                        <Button 
+                            size="icon" 
+                            variant="ghost"
+                            className="rounded-full !h-10 !w-10"
+                            disabled={isLoading}
+                        >
+                            <Mic />
+                        </Button>
+                        <Button 
+                            size="icon" 
+                            className="rounded-full !h-10 !w-10"
+                            onClick={handleSendMessage}
+                            disabled={(!newMessage.trim() && !selectedFile) || isLoading}
+                        >
+                            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send />}
+                        </Button>
+                     </div>
+                </div>
+                </>
+              )}
             </div>
           </main>
         </div>
