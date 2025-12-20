@@ -279,83 +279,10 @@ export default function DashboardPage() {
     }
   }
 
-  const cancelImageMode = () => {
-    setIsGeneratingImage(false);
-    setImagePrompt('');
-  };
-
-  const handleImageAction = async () => {
-    if (isLoading || !activeChat) return;
-
-    if (isGeneratingImage && imagePrompt.trim()) {
-      setIsLoading(true);
-      const userMessage: Message = { text: `Generate an image of: ${imagePrompt}`, isUser: true };
-
-      setChats(prevChats =>
-        prevChats.map(c =>
-          c.id === activeChatId
-            ? {
-                ...c,
-                messages: [...c.messages, userMessage, { text: '', isUser: false }],
-                title: c.messages.length === 0 ? (imagePrompt.substring(0, 20) || 'Image Generation') : c.title
-              }
-            : c
-        )
-      );
-
-      const promptToSend = imagePrompt;
-      cancelImageMode();
-
-      try {
-        const response = await fetch('https://ayvzjvz0.rpcld.net/webhook-test/Generate_image', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: promptToSend }),
-        });
-
-        if (response.ok) {
-          const imageBlob = await response.blob();
-          const imageUrl = URL.createObjectURL(imageBlob);
-          const botMessage: Message = { text: '', isUser: false, imageUrl: imageUrl };
-
-          setChats(prevChats =>
-            prevChats.map(c => {
-              if (c.id === activeChatId) {
-                const newMessages = [...c.messages];
-                newMessages[newMessages.length - 1] = botMessage;
-                return { ...c, messages: newMessages };
-              }
-              return c;
-            })
-          );
-
-        } else {
-          const result = await response.json().catch(() => ({}));
-          throw new Error(result.message || 'Failed to generate image.');
-        }
-      } catch (error) {
-        console.error("Error generating image:", error);
-        const errorMessage: Message = { text: "Could not generate the image. Please try again.", isUser: false };
-        setChats(prevChats =>
-            prevChats.map(c => {
-                if (c.id === activeChatId) {
-                    const newMessages = [...c.messages];
-                    newMessages[newMessages.length - 1] = errorMessage;
-                    return { ...c, messages: newMessages };
-                }
-                return c;
-            })
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  };
-
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
@@ -428,10 +355,13 @@ export default function DashboardPage() {
       });
 
       if (response.ok) {
-        const audioBlob = await response.blob();
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const botMessage: Message = { text: '', isUser: false, audioUrl: audioUrl };
-  
+        const result = await response.json();
+        const botMessage: Message = {
+          text: result.text || '',
+          isUser: false,
+          audioUrl: result.audio_url,
+        };
+        
         setChats(prevChats =>
           prevChats.map(c => {
             if (c.id === activeChatId) {
@@ -572,34 +502,6 @@ export default function DashboardPage() {
             </div>
             <div className="mt-4 border-t pt-4">
               <div className="space-y-2">
-                {isGeneratingImage && (
-                  <div className="relative rounded-lg border bg-background p-2 flex gap-2 items-center">
-                    <Input
-                      placeholder={'Enter a prompt to generate an image...'}
-                      className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                      value={imagePrompt}
-                      onChange={(e) => setImagePrompt(e.target.value)}
-                      disabled={isLoading}
-                    />
-                    <Button 
-                      size="icon" 
-                      className="rounded-full !h-8 !w-8 flex-shrink-0"
-                      onClick={handleImageAction}
-                      disabled={isLoading || !imagePrompt.trim()}
-                    >
-                      {isLoading ? <Loader2 className="h-4 w-4 animate-spin"/> : <Send className="h-4 w-4"/>}
-                    </Button>
-                    <Button 
-                      size="icon" 
-                      variant="ghost"
-                      className="rounded-full !h-8 !w-8 flex-shrink-0"
-                      onClick={cancelImageMode}
-                      disabled={isLoading}
-                    >
-                      <X className="h-4 w-4"/>
-                    </Button>
-                  </div>
-                )}
                 {selectedFile && (
                     <div className="mb-2">
                         <div className="inline-flex items-center gap-3 bg-card border rounded-lg p-2">
@@ -616,10 +518,10 @@ export default function DashboardPage() {
                         </div>
                     </div>
                 )}
-                <div className={cn("relative", isGeneratingImage && 'opacity-50 pointer-events-none')}>
+                <div className={cn("relative")}>
                     <Input
                       placeholder="Ask anything..."
-                      className="pl-24 pr-24 h-14 rounded-full text-base bg-muted border-none"
+                      className="pl-12 pr-24 h-14 rounded-full text-base bg-muted border-none"
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       onKeyDown={(e) => {
@@ -628,7 +530,7 @@ export default function DashboardPage() {
                           handleSendMessage();
                         }
                       }}
-                      disabled={isLoading || isGeneratingImage || isRecording}
+                      disabled={isLoading || isRecording}
                     />
                     <div className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                         <Button 
@@ -636,18 +538,9 @@ export default function DashboardPage() {
                             variant="ghost"
                             className="rounded-full !h-10 !w-10"
                             onClick={handleFileUploadClick}
-                            disabled={isLoading || isGeneratingImage || isRecording}
+                            disabled={isLoading || isRecording}
                         >
                             <Paperclip />
-                        </Button>
-                        <Button 
-                            size="icon" 
-                            variant="ghost"
-                            className="rounded-full !h-10 !w-10"
-                            onClick={() => setIsGeneratingImage(true)}
-                            disabled={isLoading || isGeneratingImage || isRecording}
-                        >
-                            <Wand2 />
                         </Button>
                     </div>
 
@@ -658,7 +551,7 @@ export default function DashboardPage() {
                             variant={isRecording ? "destructive" : "ghost"}
                             className="rounded-full !h-10 !w-10"
                             onClick={handleVoiceButtonClick}
-                            disabled={isLoading || isGeneratingImage}
+                            disabled={isLoading}
                         >
                             {isRecording ? <StopCircle /> : <Mic />}
                         </Button>
@@ -666,9 +559,9 @@ export default function DashboardPage() {
                             size="icon" 
                             className="rounded-full !h-10 !w-10"
                             onClick={() => handleSendMessage()}
-                            disabled={(!newMessage.trim() && !selectedFile) || isLoading || isGeneratingImage || isRecording}
+                            disabled={(!newMessage.trim() && !selectedFile) || isLoading || isRecording}
                         >
-                            {isLoading && !isGeneratingImage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send />}
+                            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send />}
                         </Button>
                      </div>
                 </div>
@@ -680,5 +573,3 @@ export default function DashboardPage() {
     </SidebarProvider>
   );
 }
-
-    
