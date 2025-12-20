@@ -79,4 +79,7 @@ body {
   .dark .prose {
     @apply text-foreground;
   }
+  .dark .prose code {
+    @apply text-foreground;
+  }
 }

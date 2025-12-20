@@ -236,8 +236,8 @@ export default function DashboardPage() {
             <div className="flex-1 overflow-y-auto space-y-4 pr-4">
                 {activeChat && activeChat.messages.map((message, index) => (
                     <div key={index} className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}>
-                        <Card className={`max-w-xs md:max-w-md lg:max-w-2xl ${message.isUser ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                            <CardContent className="p-3 prose dark:prose-invert">
+                        <Card className={`max-w-xs md:max-w-md lg:max-w-2xl ${message.isUser ? 'bg-primary text-primary-foreground' : 'bg-foreground text-background dark:bg-background dark:text-foreground'}`}>
+                            <CardContent className="p-3 prose dark:prose-invert prose-p:text-current prose-code:text-current">
                                 {message.text === '' && !message.isUser ? (
                                    <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
