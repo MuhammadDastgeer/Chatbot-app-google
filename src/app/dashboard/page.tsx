@@ -22,13 +22,15 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { AiWithDastgeerLogo } from '@/components/ai-with-dastgeer-logo';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Plus, Send, MessageSquare, LogOut, Loader2, Mic, Paperclip, File as FileIcon, X } from 'lucide-react';
+import { Plus, Send, MessageSquare, LogOut, Loader2, Mic, Paperclip, File as FileIcon, X, Wand2, ImageIcon, ScanSearch } from 'lucide-react';
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useToast } from "@/hooks/use-toast";
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+
 
 type Message = {
   text: string;
@@ -380,7 +382,7 @@ export default function DashboardPage() {
               <div className="relative">
                 <Input
                   placeholder="Ask anything..."
-                  className="pl-12 pr-24 h-14 rounded-full text-base bg-muted border-none"
+                  className="pl-24 pr-24 h-14 rounded-full text-base bg-muted border-none"
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyDown={(e) => {
@@ -391,15 +393,42 @@ export default function DashboardPage() {
                   }}
                   disabled={isLoading}
                 />
-                <Button 
-                    size="icon" 
-                    variant="ghost"
-                    className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full !h-10 !w-10"
-                    onClick={handleFileUploadClick}
-                    disabled={isLoading}
-                >
-                    <Paperclip />
-                </Button>
+                <div className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                    <Button 
+                        size="icon" 
+                        variant="ghost"
+                        className="rounded-full !h-10 !w-10"
+                        onClick={handleFileUploadClick}
+                        disabled={isLoading}
+                    >
+                        <Paperclip />
+                    </Button>
+                     <Popover>
+                        <PopoverTrigger asChild>
+                            <Button 
+                                size="icon" 
+                                variant="ghost"
+                                className="rounded-full !h-10 !w-10"
+                                disabled={isLoading}
+                            >
+                                <Wand2 />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-2 mb-2">
+                           <div className="flex flex-col gap-2">
+                                <Button variant="ghost" className="justify-start">
+                                    <ScanSearch className="mr-2" />
+                                    Analyze image
+                                </Button>
+                                <Button variant="ghost" className="justify-start">
+                                    <ImageIcon className="mr-2" />
+                                    Generate an image
+                                </Button>
+                           </div>
+                        </PopoverContent>
+                    </Popover>
+                </div>
+
                 <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} />
                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
                     <Button 
