@@ -22,7 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { AiWithDastgeerLogo } from '@/components/ai-with-dastgeer-logo';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Plus, Send, MessageSquare, LogOut, Loader2, Mic, Paperclip, File as FileIcon, X, Wand2, StopCircle, Bot, Search, Puzzle, Ban, BrainCircuit, Video } from 'lucide-react';
+import { Plus, Send, MessageSquare, LogOut, Loader2, Mic, Paperclip, File as FileIcon, X, Wand2, StopCircle, Bot, Search, Puzzle, Ban, BrainCircuit, Video, Phone } from 'lucide-react';
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
@@ -811,7 +811,7 @@ export default function DashboardPage() {
                               onClick={handleVoiceButtonClick}
                               disabled={isLoading || !!activeTool}
                           >
-                              {isRecording ? <StopCircle /> : <Mic />}
+                              {isRecording ? <StopCircle /> : <Phone />}
                           </Button>
                         )}
                      </div>
