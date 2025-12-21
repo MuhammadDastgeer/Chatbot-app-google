@@ -146,26 +146,26 @@ export default function DashboardPage() {
       switch(activeTool) {
         case 'createImage':
           userMessageText = `Generate an image of: ${prompt}`;
-          endpoint = 'https://ayvzjvz0.rpcld.net/webhook-test/Generate_image';
+          endpoint = 'https://ayvzjvz0.rpcld.net/webhook/Generate_image';
           title = activeChat.messages.length === 0 ? 'Image Generation' : title;
           isImageResponse = true;
           break;
         case 'createQuiz':
           userMessageText = `Create a quiz about: ${prompt}`;
           prompt = `Create a quiz about: ${prompt}`;
-          endpoint = 'https://ayvzjvz0.rpcld.net/webhook-test/web_quiz';
+          endpoint = 'https://ayvzjvz0.rpcld.net/webhook/web_quiz';
           title = activeChat.messages.length === 0 ? 'Quiz Time' : title;
           break;
         case 'webSearch':
           userMessageText = `Search the web for: ${prompt}`;
           prompt = `Search the web for: ${prompt}`;
-          endpoint = 'https://ayvzjvz0.rpcld.net/webhook-test/web_quiz';
+          endpoint = 'https://ayvzjvz0.rpcld.net/webhook/web_quiz';
           title = activeChat.messages.length === 0 ? 'Web Search' : title;
           break;
         case 'deepSearch':
           userMessageText = `Deep search for: ${prompt}`;
           prompt = `Deep search for: ${prompt}`;
-          endpoint = 'https://ayvzjvz0.rpcld.net/webhook-test/web_quiz';
+          endpoint = 'https://ayvzjvz0.rpcld.net/webhook/web_quiz';
           title = activeChat.messages.length === 0 ? 'Deep Search' : title;
           break;
       }
@@ -286,7 +286,7 @@ export default function DashboardPage() {
         }
 
         try {
-            const response = await fetch('https://ayvzjvz0.rpcld.net/webhook-test/Chatbot', {
+            const response = await fetch('https://ayvzjvz0.rpcld.net/webhook/Chatbot', {
                 method: 'POST',
                 body: formData,
             });
@@ -345,7 +345,7 @@ export default function DashboardPage() {
     setNewMessage('');
   
     try {
-      const response = await fetch('https://ayvzjvz0.rpcld.net/webhook-test/Chatbot', {
+      const response = await fetch('https://ayvzjvz0.rpcld.net/webhook/Chatbot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: messageToSend || "Tell me a fun fact." }),
@@ -507,7 +507,7 @@ export default function DashboardPage() {
 
     const audioUrl = URL.createObjectURL(audioBlob);
     const userMessage: Message = {
-      text: 'Voice message',
+      text: '',
       isUser: true,
       audioUrl: audioUrl,
     };
@@ -528,7 +528,7 @@ export default function DashboardPage() {
     formData.append('audio', audioBlob, 'voice-message.webm');
 
     try {
-      const response = await fetch('https://ayvzjvz0.rpcld.net/webhook-test/Generate_audio', {
+      const response = await fetch('https://ayvzjvz0.rpcld.net/webhook/Generate_audio', {
         method: 'POST',
         body: formData,
       });
@@ -733,7 +733,7 @@ export default function DashboardPage() {
                                 ) : (
                                   <>
                                     {message.audioUrl && message.isUser && (
-                                      <audio controls src={message.audioUrl} className="w-full mb-2" />
+                                      <audio controls src={message.audioUrl} className="w-full mb-2 hidden" />
                                     )}
                                     {message.imageUrl && (
                                        <div className="mb-2">
