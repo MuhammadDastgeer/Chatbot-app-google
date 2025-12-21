@@ -69,9 +69,9 @@ interface VapiEvent {
 }
 
 interface VapiInstance {
-  start: () => void;
+  start: (assistant?: any) => void;
   stop: () => void;
-  on: (event: string, callback: (e: VapiEvent) => void) => void;
+  on: (event: string, callback: (e: any) => void) => void;
   // Add other methods and properties as needed
 }
 
@@ -562,12 +562,14 @@ export default function DashboardPage() {
   };
 
   const startCall = () => {
-    if (window.Vapi) {
-      const vapi = new window.Vapi("9c547f36-6912-4490-8687-83d87c732fc5");
+    if (window.vapiSDK) {
+      const vapi = window.vapiSDK.run({
+        apiKey: "9c547f36-6912-4490-8687-83d87c732fc5", // mandatory
+        assistant: "cd617ba6-e318-486f-be5d-82c222dd0252", // mandatory
+        config: {}, // optional
+      });
       vapiInstanceRef.current = vapi;
       
-      vapi.start();
-
       vapi.on('call-start', () => {
         setIsCallActive(true);
       });
@@ -748,7 +750,7 @@ export default function DashboardPage() {
                         </Card>
                     </div>
                 ))}
-                {(!activeChat || activeChat.messages.length === 0) && !isLoading && (
+                {((!activeChat || activeChat.messages.length === 0) && !isLoading && !isCallActive) && (
                     <div className="flex h-full items-center justify-center">
                         <Card className="w-full max-w-lg text-center">
                             <CardHeader>
@@ -906,3 +908,5 @@ export default function DashboardPage() {
     </>
   );
 }
+
+    
