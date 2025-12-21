@@ -599,9 +599,7 @@ export default function DashboardPage() {
   const endCall = () => {
     if (vapiInstanceRef.current) {
       vapiInstanceRef.current.stop();
-      vapiInstanceRef.current = null;
     }
-    setIsCallActive(false);
   };
 
 
@@ -649,6 +647,14 @@ export default function DashboardPage() {
             return '';
     }
   };
+  
+  useEffect(() => {
+    // This effect ensures that when the call ends (either via button or hangup),
+    // we clean up the instance and UI state.
+    if (!isCallActive && vapiInstanceRef.current) {
+        vapiInstanceRef.current = null;
+    }
+  }, [isCallActive]);
 
   return (
     <>
@@ -917,5 +923,3 @@ export default function DashboardPage() {
     </>
   );
 }
-
-    
