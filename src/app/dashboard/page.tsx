@@ -109,8 +109,7 @@ export default function DashboardPage() {
       let endpoint = '';
       let title = activeChat.title;
       let isImageResponse = false;
-      let isAudioResponse = false;
-
+      
       switch(activeTool) {
         case 'createImage':
           userMessageText = `Generate an image of: ${prompt}`;
@@ -164,21 +163,6 @@ export default function DashboardPage() {
             const botMessage: Message = { text: '', isUser: false, imageUrl: imageUrl };
 
             setChats(prevChats =>
-              prevChats.map(c => {
-                if (c.id === activeChatId) {
-                  const newMessages = [...c.messages];
-                  newMessages[newMessages.length - 1] = botMessage;
-                  return { ...c, messages: newMessages };
-                }
-                return c;
-              })
-            );
-          } else if (isAudioResponse) {
-             const audioBlob = await response.blob();
-             const audioUrl = URL.createObjectURL(audioBlob);
-             const botMessage: Message = { text: '', isUser: false, audioUrl: audioUrl };
-
-             setChats(prevChats =>
               prevChats.map(c => {
                 if (c.id === activeChatId) {
                   const newMessages = [...c.messages];
@@ -476,10 +460,8 @@ export default function DashboardPage() {
   const handleVoiceButtonClick = () => {
     if (isRecording) {
       stopRecording();
-    } else if (newMessage.trim() === '') {
-        startRecording();
     } else {
-        handleSendMessage();
+      startRecording();
     }
   };
 
@@ -727,7 +709,7 @@ export default function DashboardPage() {
                     <Input
                       placeholder={getPlaceholderText()}
                       className={cn(
-                        "h-14 rounded-full text-base bg-muted border-none pr-24 text-center",
+                        "h-14 rounded-full text-base bg-muted border-none pr-14 text-center",
                         activeTool ? "pl-32" : "pl-32"
                       )}
                       value={newMessage}
@@ -811,24 +793,27 @@ export default function DashboardPage() {
                     </div>
 
                     <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept=".pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf" />
-                     <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                        <Button 
-                            size="icon" 
-                            variant={isRecording ? "destructive" : "ghost"}
-                            className="rounded-full !h-10 !w-10"
-                            onClick={handleVoiceButtonClick}
-                            disabled={isLoading || !!activeTool}
-                        >
-                            {isRecording ? <StopCircle /> : <Mic />}
-                        </Button>
-                        <Button 
-                            size="icon" 
-                            className="rounded-full !h-10 !w-10"
-                            onClick={() => handleSendMessage()}
-                            disabled={(!newMessage.trim() && !selectedFile && !activeTool) || isLoading || isRecording}
-                        >
-                            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send />}
-                        </Button>
+                     <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
+                        {newMessage.trim() || selectedFile ? (
+                           <Button 
+                              size="icon" 
+                              className="rounded-full !h-10 !w-10"
+                              onClick={() => handleSendMessage()}
+                              disabled={isLoading || isRecording}
+                          >
+                              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send />}
+                          </Button>
+                        ) : (
+                          <Button 
+                              size="icon" 
+                              variant={isRecording ? "destructive" : "ghost"}
+                              className="rounded-full !h-10 !w-10"
+                              onClick={handleVoiceButtonClick}
+                              disabled={isLoading || !!activeTool}
+                          >
+                              {isRecording ? <StopCircle /> : <Mic />}
+                          </Button>
+                        )}
                      </div>
                 </div>
               </div>
