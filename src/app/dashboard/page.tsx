@@ -22,7 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { AiWithDastgeerLogo } from '@/components/ai-with-dastgeer-logo';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Plus, Send, MessageSquare, LogOut, Loader2, Mic, Paperclip, File as FileIcon, X, Wand2, StopCircle, Bot, Search, Puzzle, Ban, BrainCircuit, Video, Phone } from 'lucide-react';
+import { Plus, Send, MessageSquare, LogOut, Loader2, Mic, Paperclip, File as FileIcon, X, Wand2, StopCircle, Bot, Search, Puzzle, Ban, BrainCircuit, Video, Phone, PhoneOff } from 'lucide-react';
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
@@ -43,6 +43,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import Script from 'next/script';
 
 
 type Message = {
@@ -60,6 +61,27 @@ type Chat = {
 };
 
 type ActiveTool = 'createImage' | 'createQuiz' | 'webSearch' | 'deepSearch';
+
+// Vapi SDK types - It's good practice to have some basic types
+declare global {
+  interface Window {
+    vapiSDK: {
+      run: (config: VapiRunConfig) => VapiInstance;
+    };
+  }
+}
+
+interface VapiRunConfig {
+  apiKey: string;
+  assistant: string;
+  config?: Record<string, any>;
+}
+
+interface VapiInstance {
+  stop: () => void;
+  // Add other methods if you know them
+}
+
 
 export default function DashboardPage() {
   const { logout } = useAuth();
@@ -81,7 +103,9 @@ export default function DashboardPage() {
   const audioChunksRef = useRef<Blob[]>([]);
   
   const [activeTool, setActiveTool] = useState<ActiveTool | null>(null);
-
+  
+  const [isCallActive, setIsCallActive] = useState(false);
+  const vapiInstanceRef = useRef<VapiInstance | null>(null);
 
   const activeChat = useMemo(() => {
     return chats.find((c) => c.id === activeChatId);
@@ -536,6 +560,40 @@ export default function DashboardPage() {
     }
   };
 
+  const startCall = () => {
+    if (window.vapiSDK) {
+      const assistant = "cd617ba6-e318-486f-be5d-82c222dd0252";
+      const apiKey = "9c547f36-6912-4490-8687-83d87c732fc5";
+      const buttonConfig = {};
+
+      const vapiInstance = window.vapiSDK.run({
+        apiKey: apiKey,
+        assistant: assistant,
+        config: buttonConfig,
+      });
+      vapiInstanceRef.current = vapiInstance;
+      setIsCallActive(true);
+      
+      // Vapi's SDK might have events to listen to for when the call actually ends
+      // For now, we assume the user has to manually hang up.
+    } else {
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Vapi SDK not loaded yet. Please wait a moment and try again."
+        });
+    }
+  };
+
+  const endCall = () => {
+    if (vapiInstanceRef.current) {
+      vapiInstanceRef.current.stop();
+      vapiInstanceRef.current = null;
+    }
+    setIsCallActive(false);
+  };
+
+
   const getPlaceholderText = () => {
     switch (activeTool) {
       case 'createImage':
@@ -582,6 +640,15 @@ export default function DashboardPage() {
   };
 
   return (
+    <>
+    <Script
+        src="https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js"
+        strategy="afterInteractive"
+        onLoad={() => {
+          console.log("Vapi SDK script loaded.");
+          // The SDK is now available on window.vapiSDK
+        }}
+      />
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader>
@@ -624,6 +691,12 @@ export default function DashboardPage() {
                 <h1 className="text-xl font-semibold">{activeChat?.title}</h1>
             </div>
             <div className="flex items-center gap-2">
+                {isCallActive && (
+                  <Button variant="destructive" onClick={endCall}>
+                    <PhoneOff className="mr-2" />
+                    End Call
+                  </Button>
+                )}
                 <ThemeToggle />
             </div>
           </header>
@@ -720,7 +793,7 @@ export default function DashboardPage() {
                           handleSendMessage();
                         }
                       }}
-                      disabled={isLoading || isRecording}
+                      disabled={isLoading || isRecording || isCallActive}
                     />
                     <div className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                         <Button 
@@ -728,7 +801,7 @@ export default function DashboardPage() {
                             variant="ghost"
                             className="rounded-full !h-10 !w-10"
                             onClick={handleFileUploadClick}
-                            disabled={isLoading || isRecording || !!activeTool}
+                            disabled={isLoading || isRecording || !!activeTool || isCallActive}
                         >
                             <Plus />
                         </Button>
@@ -737,7 +810,7 @@ export default function DashboardPage() {
                               <Button 
                                   variant="ghost"
                                   className="rounded-full !h-10 px-4"
-                                  disabled={isLoading || isRecording || !!activeTool}
+                                  disabled={isLoading || isRecording || !!activeTool || isCallActive}
                               >
                                   <Bot />
                                   <span>Tools</span>
@@ -799,7 +872,7 @@ export default function DashboardPage() {
                               variant={isRecording ? "destructive" : "ghost"}
                               className="rounded-full !h-10 !w-10"
                               onClick={handleVoiceButtonClick}
-                              disabled={isLoading || !!activeTool}
+                              disabled={isLoading || !!activeTool || isCallActive}
                           >
                               {isRecording ? <StopCircle /> : <Mic />}
                           </Button>
@@ -808,7 +881,7 @@ export default function DashboardPage() {
                               size="icon" 
                               className="rounded-full !h-10 !w-10"
                               onClick={() => handleSendMessage()}
-                              disabled={isLoading || isRecording}
+                              disabled={isLoading || isRecording || isCallActive}
                           >
                               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send />}
                           </Button>
@@ -817,8 +890,8 @@ export default function DashboardPage() {
                               size="icon"
                               variant="ghost"
                               className="rounded-full !h-10 !w-10"
-                              onClick={() => { /* TODO: Implement call functionality */ }}
-                              disabled={isLoading || !!activeTool || isRecording}
+                              onClick={startCall}
+                              disabled={isLoading || !!activeTool || isRecording || isCallActive}
                           >
                               <Phone />
                           </Button>
@@ -831,5 +904,6 @@ export default function DashboardPage() {
         </div>
       </SidebarInset>
     </SidebarProvider>
+    </>
   );
 }
