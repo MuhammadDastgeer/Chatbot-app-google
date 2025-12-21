@@ -571,8 +571,16 @@ export default function DashboardPage() {
         assistant: assistant,
         config: buttonConfig,
       });
-      vapiInstanceRef.current = vapiInstance;
-      setIsCallActive(true);
+
+      vapiInstance.on('call-start', () => {
+        setIsCallActive(true);
+        vapiInstanceRef.current = vapiInstance;
+      });
+
+      vapiInstance.on('call-end', () => {
+        endCall();
+      });
+
     } else {
         toast({
             variant: "destructive",
@@ -585,8 +593,8 @@ export default function DashboardPage() {
   const endCall = () => {
     if (vapiInstanceRef.current) {
       vapiInstanceRef.current.stop();
-      vapiInstanceRef.current = null;
     }
+    vapiInstanceRef.current = null;
     setIsCallActive(false);
   };
 
