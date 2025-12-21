@@ -152,16 +152,19 @@ export default function DashboardPage() {
           break;
         case 'createQuiz':
           userMessageText = `Create a quiz about: ${prompt}`;
+          prompt = `Create a quiz about: ${prompt}`;
           endpoint = 'https://ayvzjvz0.rpcld.net/webhook-test/web_quiz';
           title = activeChat.messages.length === 0 ? 'Quiz Time' : title;
           break;
         case 'webSearch':
           userMessageText = `Search the web for: ${prompt}`;
+          prompt = `Search the web for: ${prompt}`;
           endpoint = 'https://ayvzjvz0.rpcld.net/webhook-test/web_quiz';
           title = activeChat.messages.length === 0 ? 'Web Search' : title;
           break;
         case 'deepSearch':
           userMessageText = `Deep search for: ${prompt}`;
+          prompt = `Deep search for: ${prompt}`;
           endpoint = 'https://ayvzjvz0.rpcld.net/webhook-test/web_quiz';
           title = activeChat.messages.length === 0 ? 'Deep Search' : title;
           break;
