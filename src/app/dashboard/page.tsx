@@ -586,6 +586,7 @@ export default function DashboardPage() {
       vapi.on('call-end', () => {
         setIsCallActive(false);
         vapiInstanceRef.current = null;
+        window.location.reload();
       });
 
     } else {
