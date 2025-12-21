@@ -709,7 +709,7 @@ export default function DashboardPage() {
                     <Input
                       placeholder={getPlaceholderText()}
                       className={cn(
-                        "h-14 rounded-full text-base bg-muted border-none pr-14 text-center",
+                        "h-14 rounded-full text-base bg-muted border-none pr-28 text-center",
                         activeTool ? "pl-32" : "pl-32"
                       )}
                       value={newMessage}
@@ -793,8 +793,17 @@ export default function DashboardPage() {
                     </div>
 
                     <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept=".pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf" />
-                     <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
-                        {newMessage.trim() || selectedFile ? (
+                     <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                        <Button 
+                              size="icon" 
+                              variant={isRecording ? "destructive" : "ghost"}
+                              className="rounded-full !h-10 !w-10"
+                              onClick={handleVoiceButtonClick}
+                              disabled={isLoading || !!activeTool}
+                          >
+                              {isRecording ? <StopCircle /> : <Mic />}
+                          </Button>
+                        {(newMessage.trim() || selectedFile) ? (
                            <Button 
                               size="icon" 
                               className="rounded-full !h-10 !w-10"
@@ -805,13 +814,13 @@ export default function DashboardPage() {
                           </Button>
                         ) : (
                           <Button 
-                              size="icon" 
-                              variant={isRecording ? "destructive" : "ghost"}
+                              size="icon"
+                              variant="ghost"
                               className="rounded-full !h-10 !w-10"
-                              onClick={handleVoiceButtonClick}
-                              disabled={isLoading || !!activeTool}
+                              onClick={() => { /* TODO: Implement call functionality */ }}
+                              disabled={isLoading || !!activeTool || isRecording}
                           >
-                              {isRecording ? <StopCircle /> : <Phone />}
+                              <Phone />
                           </Button>
                         )}
                      </div>
