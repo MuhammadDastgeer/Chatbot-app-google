@@ -732,7 +732,7 @@ export default function DashboardPage() {
                                    <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
                                   <>
-                                    {message.audioUrl && (
+                                    {message.audioUrl && message.isUser && (
                                       <audio controls src={message.audioUrl} className="w-full mb-2" />
                                     )}
                                     {message.imageUrl && (
