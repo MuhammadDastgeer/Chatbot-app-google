@@ -493,10 +493,11 @@ export default function DashboardPage() {
     if (!activeChat) return;
     setIsLoading(true);
 
+    const audioUrl = URL.createObjectURL(audioBlob);
     const userMessage: Message = {
       text: 'Voice message',
       isUser: true,
-      audioUrl: URL.createObjectURL(audioBlob),
+      audioUrl: audioUrl,
     };
 
     setChats(prevChats =>
@@ -561,23 +562,17 @@ export default function DashboardPage() {
   };
 
   const startCall = () => {
-    if (window.vapiSDK) {
-      const assistant = "cd617ba6-e318-486f-be5d-82c222dd0252";
-      const apiKey = "9c547f36-6912-4490-8687-83d87c732fc5";
-      const buttonConfig = {};
+    if (window.Vapi) {
+      const vapi = new window.Vapi("9c547f36-6912-4490-8687-83d87c732fc5");
+      vapiInstanceRef.current = vapi;
+      
+      vapi.start();
 
-      const vapiInstance = window.vapiSDK.run({
-        apiKey: apiKey,
-        assistant: assistant,
-        config: buttonConfig,
-      });
-
-      vapiInstance.on('call-start', () => {
+      vapi.on('call-start', () => {
         setIsCallActive(true);
-        vapiInstanceRef.current = vapiInstance;
       });
 
-      vapiInstance.on('call-end', () => {
+      vapi.on('call-end', () => {
         endCall();
       });
 
@@ -593,8 +588,8 @@ export default function DashboardPage() {
   const endCall = () => {
     if (vapiInstanceRef.current) {
       vapiInstanceRef.current.stop();
+      vapiInstanceRef.current = null;
     }
-    vapiInstanceRef.current = null;
     setIsCallActive(false);
   };
 
