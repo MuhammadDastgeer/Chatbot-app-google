@@ -62,24 +62,24 @@ type Chat = {
 
 type ActiveTool = 'createImage' | 'createQuiz' | 'webSearch' | 'deepSearch';
 
-// Vapi SDK types - It's good practice to have some basic types
-declare global {
-  interface Window {
-    vapiSDK: {
-      run: (config: VapiRunConfig) => VapiInstance;
-    };
-  }
-}
-
-interface VapiRunConfig {
-  apiKey: string;
-  assistant: string;
-  config?: Record<string, any>;
+// Vapi SDK types
+interface VapiEvent {
+  type: string;
+  // other properties based on event type
 }
 
 interface VapiInstance {
+  start: () => void;
   stop: () => void;
-  // Add other methods if you know them
+  on: (event: string, callback: (e: VapiEvent) => void) => void;
+  // Add other methods and properties as needed
+}
+
+declare global {
+  interface Window {
+    Vapi: new (apiKey: string) => VapiInstance;
+    vapiSDK: VapiInstance; // For the old script tag approach
+  }
 }
 
 
@@ -573,9 +573,6 @@ export default function DashboardPage() {
       });
       vapiInstanceRef.current = vapiInstance;
       setIsCallActive(true);
-      
-      // Vapi's SDK might have events to listen to for when the call actually ends
-      // For now, we assume the user has to manually hang up.
     } else {
         toast({
             variant: "destructive",
@@ -646,7 +643,6 @@ export default function DashboardPage() {
         strategy="afterInteractive"
         onLoad={() => {
           console.log("Vapi SDK script loaded.");
-          // The SDK is now available on window.vapiSDK
         }}
       />
     <SidebarProvider>
