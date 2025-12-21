@@ -77,8 +77,17 @@ interface VapiInstance {
 
 declare global {
   interface Window {
-    Vapi: new (apiKey: string) => VapiInstance;
-    vapiSDK: VapiInstance; // For the old script tag approach
+    Vapi: { 
+      new (apiKey: string): VapiInstance;
+      isSupported: () => boolean;
+    };
+    vapiSDK: {
+        run: (options: {
+            apiKey: string;
+            assistant: string;
+            config: any;
+        }) => VapiInstance;
+    }
   }
 }
 
@@ -526,7 +535,7 @@ export default function DashboardPage() {
         const botMessage: Message = {
           text: result.text || '',
           isUser: false,
-          audioUrl: result.audio_url,
+          audioUrl: `data:audio/mp3;base64,${result.audio}`,
         };
         
         setChats(prevChats =>
