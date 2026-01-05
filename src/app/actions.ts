@@ -33,7 +33,7 @@ export async function registerUserAction(data: unknown): Promise<RegisterUserRes
   const { username, email, password } = validatedFields.data;
 
   try {
-    const response = await fetch('https://n8n-5a6g.onrender.com/webhook-test/signup', {
+    const response = await fetch('https://n8n-5a6g.onrender.com/webhook/signup', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -89,7 +89,7 @@ export async function verifyEmailAction(data: unknown): Promise<VerifyEmailRespo
   const { email, code } = validatedFields.data;
 
   try {
-    const response = await fetch('https://n8n-5a6g.onrender.com/webhook-test/verify-email', {
+    const response = await fetch('https://n8n-5a6g.onrender.com/webhook/verify-email', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -152,7 +152,7 @@ export async function loginUserAction(data: unknown): Promise<LoginUserResponse>
   const { email, password } = validatedFields.data;
 
   try {
-    const response = await fetch('https://n8n-5a6g.onrender.com/webhook-test/login', {
+    const response = await fetch('https://n8n-5a6g.onrender.com/webhook/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -219,7 +219,7 @@ export async function forgotPasswordAction(data: unknown): Promise<ForgotPasswor
   const { email } = validatedFields.data;
 
   try {
-    const response = await fetch('https://n8n-5a6g.onrender.com/webhook-test/forgot-password', {
+    const response = await fetch('https://n8n-5a6g.onrender.com/webhook/forgot-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
@@ -260,7 +260,7 @@ export async function verifyResetCodeAction(data: unknown): Promise<VerifyResetC
   const { email, code } = validatedFields.data;
 
   try {
-    const response = await fetch('https://n8n-5a6g.onrender.com/webhook-test/verify-reset-code', {
+    const response = await fetch('https://n8n-5a6g.onrender.com/webhook/verify-reset-code', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, code }),
@@ -310,7 +310,7 @@ export async function resetPasswordAction(data: unknown): Promise<ResetPasswordR
   const { email, code, newPassword } = validatedFields.data;
 
   try {
-    const response = await fetch('https://n8n-5a6g.onrender.com/webhook-test/reset-password', {
+    const response = await fetch('https://n8n-5a6g.onrender.com/webhook/reset-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, code, new_password: newPassword }),
